@@ -5,6 +5,7 @@ import type { Expense, ExpenseInput } from "@/lib/types";
 import { Header } from "@/components/Header";
 import { MetricCards } from "@/components/MetricCards";
 import { CategoryBreakdown } from "@/components/CategoryBreakdown";
+import { RenewalCalendar } from "@/components/RenewalCalendar";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import { Toast } from "@/components/Toast";
@@ -196,6 +197,7 @@ export default function DashboardPage() {
         )}
 
         <MetricCards expenses={expenses} loading={status === "loading"} />
+        <RenewalCalendar expenses={expenses} />
         <CategoryBreakdown expenses={expenses} />
         <ExpenseForm
           open={formOpen}
