@@ -1,0 +1,44 @@
+EXPECTED PROJECT STRUCTURE
+
+After unzipping, you should see exactly these files and folders:
+
+tigeri-dashboard/
+├── .env.local.example
+├── .gitignore
+├── README.md
+├── middleware.ts
+├── next.config.js
+├── package.json
+├── postcss.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+├── deploy-windows.ps1   (Windows helper)
+├── STRUCTURE.txt        (this file)
+├── app/
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── page.tsx
+│   └── api/
+│       └── expenses/
+│           ├── route.ts
+│           └── [id]/
+│               └── route.ts
+├── components/
+│   ├── CategoryBreakdown.tsx
+│   ├── ExpenseForm.tsx
+│   ├── ExpenseTable.tsx
+│   ├── Header.tsx
+│   ├── MetricCards.tsx
+│   └── Toast.tsx
+└── lib/
+    ├── notion.ts
+    └── types.ts
+
+TOTAL: 22 files in 6 folders.
+
+WINDOWS USERS: Enable "File name extensions" in File Explorer
+(View > Show > File name extensions) before extracting.
+Otherwise extensions like .ts and .js may appear hidden.
+
+LINUX/MAC USERS: Hidden files (.gitignore, .env.local.example)
+are visible by default - you should see them after extracting.

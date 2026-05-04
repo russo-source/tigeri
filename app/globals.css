@@ -1,0 +1,191 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-navy: #040273;
+  --color-navy-dark: #030252;
+  --color-navy-darker: #020141;
+  --color-white: #ffffff;
+  --color-surface-light: #f8f9fa;
+  --color-surface-blue: #f0f4f8;
+  --color-border: #e5e7eb;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #0284c7;
+}
+
+@layer base {
+  body {
+    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    background: var(--color-surface-light);
+    line-height: 1.5;
+  }
+}
+
+@layer components {
+  .ts-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .ts-input,
+  .ts-select,
+  .ts-textarea {
+    width: 100%;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 12px;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    transition: border-color 150ms ease;
+  }
+  .ts-input:focus,
+  .ts-select:focus,
+  .ts-textarea:focus {
+    outline: 2px solid var(--color-navy);
+    outline-offset: 2px;
+    border-color: var(--color-navy);
+  }
+  .ts-input[type="number"] {
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .ts-textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  .ts-btn {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 2px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+    border: 1px solid transparent;
+  }
+  .ts-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .ts-btn-primary {
+    background: var(--color-navy);
+    color: var(--color-white);
+    border-color: var(--color-navy);
+  }
+  .ts-btn-primary:hover {
+    background: var(--color-navy-dark);
+    border-color: var(--color-navy-dark);
+  }
+  .ts-btn-primary:active {
+    background: var(--color-navy-darker);
+    transform: scale(0.98);
+  }
+  .ts-btn-secondary {
+    background: var(--color-white);
+    color: var(--color-navy);
+    border-color: var(--color-navy);
+  }
+  .ts-btn-secondary:hover {
+    background: var(--color-surface-blue);
+  }
+  .ts-btn-ghost {
+    background: transparent;
+    color: var(--color-text-secondary);
+    border-color: transparent;
+    padding: 8px 12px;
+  }
+  .ts-btn-ghost:hover {
+    background: var(--color-surface-light);
+    color: var(--color-navy);
+  }
+  .ts-btn-danger-ghost {
+    background: transparent;
+    color: var(--color-error);
+    border-color: transparent;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .ts-btn-danger-ghost:hover {
+    background: var(--color-surface-light);
+  }
+  .ts-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+  }
+  .ts-badge {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 2px;
+    display: inline-block;
+    background: var(--color-white);
+  }
+  .ts-badge-active {
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+  }
+  .ts-badge-pending {
+    color: var(--color-warning);
+    border: 1px solid var(--color-warning);
+  }
+  .ts-badge-cancelled {
+    color: var(--color-text-tertiary);
+    border: 1px solid var(--color-text-tertiary);
+  }
+  .ts-badge-trial {
+    color: var(--color-info);
+    border: 1px solid var(--color-info);
+  }
+  .ts-mono-meta {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ts-loader {
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-navy);
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.ts-pulse {
+  animation: pulse 1.2s ease-in-out infinite;
+}
