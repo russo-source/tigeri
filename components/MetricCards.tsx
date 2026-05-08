@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { Expense } from "@/lib/types";
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
 function fmtUSD(n: number): string {
   return (
     "$" +
-    (Number(n) || 0).toLocaleString("en-US", {
+    n.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })
@@ -25,49 +26,85 @@ function monthlyEquivalent(e: Expense): number {
 }
 
 export function MetricCards({ expenses, loading }: Props) {
-  const monthly = expenses.reduce((s, e) => s + monthlyEquivalent(e), 0);
-  const annual = monthly * 12;
-  const oneTime = expenses
-    .filter((e) => e.cycle === "One-time" && e.status === "Active")
-    .reduce((s, e) => s + (e.amount || 0), 0);
-  const pending = expenses.filter((e) => e.status === "Pending Info").length;
+  const monthlyBurn = useMemo(
+    () => expenses.reduce((sum, e) => sum + monthlyEquivalent(e), 0),
+    [expenses]
+  );
 
-  const cards = [
-    {
-      label: "Monthly Burn",
-      value: fmtUSD(monthly),
-      sublabel: "Active subscriptions only",
-    },
-    {
-      label: "Annual Run Rate",
-      value: fmtUSD(annual),
-      sublabel: "Monthly × 12",
-    },
-    {
-      label: "One-time Logged",
-      value: fmtUSD(oneTime),
-      sublabel: "Hardware, top-ups, contractors",
-    },
-    {
-      label: "Pending Info",
-      value: String(pending),
-      sublabel: "Items awaiting amount",
-    },
-  ];
+  const annualRunRate = monthlyBurn * 12;
+
+  const oneTimeLogged = useMemo(
+    () =>
+      expenses
+        .filter((e) => e.cycle === "One-time" && e.status === "Active")
+        .reduce((sum, e) => sum + (e.amount || 0), 0),
+    [expenses]
+  );
+
+  const pendingInfoCount = useMemo(
+    () => expenses.filter((e) => e.status === "Pending Info").length,
+    [expenses]
+  );
+
+  const totalLogged = useMemo(
+    () =>
+      expenses
+        .filter((e) => e.status !== "Pending Info")
+        .reduce((sum, e) => sum + (e.amount || 0), 0),
+    [expenses]
+  );
 
   return (
-    <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      {cards.map((c) => (
-        <div key={c.label} className="ts-card p-6">
-          <div className="ts-label">{c.label}</div>
-          <div className="font-mono text-[26px] font-semibold text-navy tracking-tight mt-3">
-            {loading && expenses.length === 0 ? "—" : c.value}
-          </div>
-          <div className="font-mono text-[11px] text-[#9ca3af] uppercase tracking-wider mt-2">
-            {c.sublabel}
-          </div>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div className="ts-card p-6">
+        <div className="ts-label">Monthly Burn</div>
+        <div className="font-mono text-[26px] font-semibold text-navy mt-3">
+          {loading ? "-" : fmtUSD(monthlyBurn)}
         </div>
-      ))}
-    </section>
+        <div className="font-mono text-[10px] text-[#9ca3af] uppercase tracking-wider mt-1">
+          Active subscriptions only
+        </div>
+      </div>
+
+      <div className="ts-card p-6">
+        <div className="ts-label">Annual Run Rate</div>
+        <div className="font-mono text-[26px] font-semibold text-navy mt-3">
+          {loading ? "-" : fmtUSD(annualRunRate)}
+        </div>
+        <div className="font-mono text-[10px] text-[#9ca3af] uppercase tracking-wider mt-1">
+          Monthly x 12
+        </div>
+      </div>
+
+      <div className="ts-card p-6">
+        <div className="ts-label">One-time Logged</div>
+        <div className="font-mono text-[26px] font-semibold text-navy mt-3">
+          {loading ? "-" : fmtUSD(oneTimeLogged)}
+        </div>
+        <div className="font-mono text-[10px] text-[#9ca3af] uppercase tracking-wider mt-1">
+          Hardware, top-ups, contractors
+        </div>
+      </div>
+
+      <div className="ts-card p-6">
+        <div className="ts-label">Pending Info</div>
+        <div className="font-mono text-[26px] font-semibold text-navy mt-3">
+          {loading ? "-" : pendingInfoCount}
+        </div>
+        <div className="font-mono text-[10px] text-[#9ca3af] uppercase tracking-wider mt-1">
+          Items awaiting amount
+        </div>
+      </div>
+
+      <div className="ts-card p-6">
+        <div className="ts-label">Total Logged</div>
+        <div className="font-mono text-[26px] font-semibold text-navy mt-3">
+          {loading ? "-" : fmtUSD(totalLogged)}
+        </div>
+        <div className="font-mono text-[10px] text-[#9ca3af] uppercase tracking-wider mt-1">
+          Sum of all bill amounts
+        </div>
+      </div>
+    </div>
   );
 }
