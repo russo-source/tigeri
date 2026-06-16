@@ -19,6 +19,7 @@ export async function POST(req: Request) {
       paidBy: s("paidBy"),
       period: s("period"),
       vendor: s("vendor"),
+      business: s("business"),
       description: s("description"),
       invoiceNo: s("invoiceNo"),
       date: s("date"),

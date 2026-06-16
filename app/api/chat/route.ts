@@ -47,6 +47,7 @@ INVOICES (JSON array):
 ${JSON.stringify(
       invoices.map((i) => ({
         vendor: i.vendor,
+        business: i.business,
         description: i.description,
         date: i.date,
         paidBy: i.paidBy,

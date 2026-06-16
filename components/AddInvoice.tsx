@@ -33,6 +33,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
 
   const [paidBy, setPaidBy] = useState("Russo");
   const [vendor, setVendor] = useState("");
+  const [business, setBusiness] = useState("");
   const [description, setDescription] = useState("");
   const [invoiceNo, setInvoiceNo] = useState("");
   const [date, setDate] = useState("");
@@ -67,6 +68,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
       fd.append("paidBy", paidBy);
       fd.append("period", period);
       fd.append("vendor", vendor);
+      fd.append("business", business);
       fd.append("description", description);
       fd.append("invoiceNo", invoiceNo);
       fd.append("date", fmtSheetDate(date));
@@ -79,7 +81,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
       showToast("Invoice added to Drive + sheet");
-      setFile(null); setVendor(""); setDescription(""); setInvoiceNo("");
+      setFile(null); setVendor(""); setBusiness(""); setDescription(""); setInvoiceNo("");
       setOrigAmount(""); setAmountUSD("");
       onAdded();
     } catch (err: any) {
@@ -133,6 +135,10 @@ export function AddInvoice({ onAdded, showToast }: Props) {
             <div>
               <label className="ts-label">Vendor</label>
               <input className="ts-input" value={vendor} onChange={(e) => setVendor(e.target.value)} required placeholder="Anthropic" />
+            </div>
+            <div>
+              <label className="ts-label">Business</label>
+              <input className="ts-input" value={business} onChange={(e) => setBusiness(e.target.value)} placeholder="Tigeri" />
             </div>
             <div className="md:col-span-2">
               <label className="ts-label">Description</label>

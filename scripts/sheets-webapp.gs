@@ -1,21 +1,18 @@
 /**
- * Tigeri invoice sheet — write endpoint (reimbursements + add-invoice with Drive upload).
+ * Tigeri invoice sheet — write endpoint (reimbursements + add-invoice with Drive upload + delete).
+ *
+ * HEADER-AWARE: columns are located by their header name, so inserting or reordering
+ * columns in the sheet (e.g. the "Business" column) will NOT break writes.
  *
  * UPDATE / REDEPLOY:
  *   1. Open the sheet → Extensions → Apps Script
  *   2. Select-all, delete, paste THIS file
- *   3. Re-set SECRET below to YOUR value (the one already in .env.local) — pasting overwrote it
+ *   3. Re-set SECRET below to YOUR value (pasting overwrote it)
  *   4. Save → Deploy → Manage deployments → ✏️ Edit → Version: "New version" → Deploy
  *      (the /exec URL stays the same)
- *
- * Two actions on doPost (JSON body, must include the secret):
- *   reimburse  (default): { row, reimbursed }            → sets the Reimbursed cell
- *   addInvoice          : { ...fields, fileBase64, ... }  → saves PDF to Drive + appends a row
  */
 const SECRET = "PASTE_A_LONG_RANDOM_STRING_HERE";
 const ROOT_FOLDER_ID = "1_9D5OhinPuVRerBNdxh0ThAEVQ4D6zkC"; // "Tigeri Expenses"
-const REIMBURSED_COL = 2;
-const PAIDBY_COL = 1;
 const ALLOWED_REIMBURSED = ["", "Tim", "Pending"];
 
 function sheet_() {
@@ -28,6 +25,23 @@ function getOrCreateFolder_(parent, name) {
   name = String(name || "").trim() || "Unsorted";
   const it = parent.getFoldersByName(name);
   return it.hasNext() ? it.next() : parent.createFolder(name);
+}
+
+// Locate the header row and map column names -> 1-based column numbers.
+function headers_(sh) {
+  const values = sh.getDataRange().getValues();
+  let hRow = -1;
+  for (let i = 0; i < values.length; i++) {
+    if (String(values[i][0]).trim() === "Paid By") { hRow = i; break; }
+  }
+  if (hRow === -1) throw new Error('Header row ("Paid By") not found');
+  const map = {};
+  values[hRow].forEach(function (name, c) { map[String(name).trim().toLowerCase()] = c + 1; });
+  return {
+    headerRow: hRow + 1,
+    values: values,
+    col: function (name) { return map[String(name).toLowerCase()] || 0; },
+  };
 }
 
 function doGet() {
@@ -52,9 +66,10 @@ function reimburse_(body) {
   if (!Number.isInteger(row) || row < 2) return json_({ ok: false, error: "bad row" });
   if (ALLOWED_REIMBURSED.indexOf(value) === -1) return json_({ ok: false, error: "value not allowed" });
   const sh = sheet_();
-  const paidBy = String(sh.getRange(row, PAIDBY_COL).getValue()).trim();
+  const H = headers_(sh);
+  const paidBy = String(sh.getRange(row, H.col("Paid By")).getValue()).trim();
   if (paidBy !== "Russo") return json_({ ok: false, error: "row " + row + " is not a Russo-paid invoice" });
-  sh.getRange(row, REIMBURSED_COL).setValue(value);
+  sh.getRange(row, H.col("Reimbursed")).setValue(value);
   return json_({ ok: true, row: row, reimbursed: value });
 }
 
@@ -66,7 +81,6 @@ function addInvoice_(body) {
   const vendor = String(body.vendor || "").trim() || "Unsorted";
   const period = String(body.period || "").trim() || "Unsorted";
 
-  // Drive: Tigeri Expenses / Person / Period / Vendor / file
   const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
   const folder = getOrCreateFolder_(getOrCreateFolder_(getOrCreateFolder_(root, paidBy), period), vendor);
   const filename = String(body.filename || (vendor + ".pdf")).trim();
@@ -75,39 +89,41 @@ function addInvoice_(body) {
   const file = folder.createFile(blob);
   const url = file.getUrl();
 
-  // Sheet: insert a row just after the last Tim/Russo data row (above the totals block)
   const sh = sheet_();
-  const colA = sh.getRange(1, 1, sh.getLastRow(), 1).getValues();
-  let lastData = 1;
-  for (let i = 0; i < colA.length; i++) {
-    const a = String(colA[i][0]).trim();
+  const H = headers_(sh);
+  const paidByCol = H.col("Paid By");
+  // last data row = the last row whose Paid-By cell is Tim/Russo (above the totals block)
+  let lastData = H.headerRow;
+  for (let i = 0; i < H.values.length; i++) {
+    const a = String(H.values[i][paidByCol - 1]).trim();
     if (a === "Tim" || a === "Russo") lastData = i + 1;
   }
   sh.insertRowAfter(lastData);
   const r = lastData + 1;
-  sh.getRange(r, 1, 1, 9).setValues([[
-    paidBy,
-    String(body.reimbursed || ""),
-    vendor,
-    String(body.description || ""),
-    String(body.invoiceNo || ""),
-    String(body.date || ""),
-    String(body.status || ""),
-    Number(body.origAmount) || 0,
-    String(body.currency || ""),
-  ]]);
-  sh.getRange(r, 10).setValue(Number(body.amountUSD) || 0);
-  sh.getRange(r, 11).setFormula('=HYPERLINK("' + url + '","View PDF")');
+  function set(name, val) { const c = H.col(name); if (c) sh.getRange(r, c).setValue(val); }
+  set("Paid By", paidBy);
+  set("Reimbursed", String(body.reimbursed || ""));
+  set("Vendor", vendor);
+  set("Business", String(body.business || ""));
+  set("Description", String(body.description || ""));
+  set("Invoice #", String(body.invoiceNo || ""));
+  set("Date", String(body.date || ""));
+  set("Status", String(body.status || ""));
+  set("Orig. Amount", Number(body.origAmount) || 0);
+  set("Cur.", String(body.currency || ""));
+  set("Amount (USD)", Number(body.amountUSD) || 0);
+  const linkCol = H.col("Invoice Link");
+  if (linkCol) sh.getRange(r, linkCol).setFormula('=HYPERLINK("' + url + '","View PDF")');
 
   return json_({ ok: true, row: r, fileUrl: url, fileId: file.getId() });
 }
 
-// Trash the linked PDF + delete the row. Guarded to data rows only.
 function deleteInvoice_(body) {
   const row = Number(body.row);
   if (!Number.isInteger(row) || row < 2) return json_({ ok: false, error: "bad row" });
   const sh = sheet_();
-  const a = String(sh.getRange(row, PAIDBY_COL).getValue()).trim();
+  const H = headers_(sh);
+  const a = String(sh.getRange(row, H.col("Paid By")).getValue()).trim();
   if (a !== "Tim" && a !== "Russo") return json_({ ok: false, error: "row " + row + " is not a data row" });
   const out = { ok: true, row: row };
   if (body.fileId) {
@@ -116,4 +132,11 @@ function deleteInvoice_(body) {
   }
   sh.deleteRow(row);
   return json_(out);
+}
+
+// Run once to grant the Drive read/write permission.
+function authorizeDrive() {
+  var folder = DriveApp.getFolderById(ROOT_FOLDER_ID);
+  var f = folder.createFile("__perm_check__.txt", "ok");
+  f.setTrashed(true);
 }

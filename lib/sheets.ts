@@ -178,6 +178,7 @@ export interface AddInvoicePayload {
   paidBy: string;
   period: string;
   vendor: string;
+  business: string;
   description: string;
   invoiceNo: string;
   date: string; // "DD Mon YYYY" to match the sheet
