@@ -55,7 +55,8 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
     const vendors = Object.entries(byVendor).sort((a, b) => b[1] - a[1]).slice(0, 8);
     const timCount = filtered.filter((i) => i.paidBy === "Tim").length;
     const russoCount = filtered.filter((i) => i.paidBy === "Russo").length;
-    return { total, tim, russo, owed, pendingCount, vendors, timCount, russoCount };
+    const months = Math.max(1, new Set(filtered.filter((i) => i.date).map((i) => i.date.slice(0, 7))).size);
+    return { total, tim, russo, owed, pendingCount, vendors, timCount, russoCount, months };
   }, [filtered]);
 
   const recent = useMemo(
@@ -64,6 +65,7 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
   );
 
   const vendorMax = stats.vendors.length ? stats.vendors[0][1] : 1;
+  const monthlyBurn = (stats.total + (profile === "all" ? salaryTotal() : 0)) / stats.months;
 
   return (
     <>
@@ -99,7 +101,7 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
           value={loading ? "—" : fmtUSD(stats.tim + (profile === "all" ? salaryTotal() : 0))}
           sub={profile === "all" ? `${stats.timCount} invoices + salary` : `${stats.timCount} invoices`}
         />
-        <StatCard label="Paid by Russo" value={loading ? "—" : fmtUSD(stats.russo)} sub={`${stats.russoCount} invoices`} />
+        <StatCard label="Avg Monthly Burn" value={loading ? "—" : fmtUSD(monthlyBurn)} sub={`across ${stats.months} months`} />
         <StatCard label="Tim owes Russo" value={loading ? "—" : fmtUSD(stats.owed)} sub={`${stats.pendingCount} pending`} />
       </div>
 
