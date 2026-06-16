@@ -1,128 +1,88 @@
-# Tigeri Expense Dashboard
+# Tigeri Invoice & Reimbursement Tracker
 
-A TigerScale-branded expense tracker that reads and writes directly to your Notion database. Hosted on Vercel, password-protected, shareable with the team.
+A TigerScale-branded dashboard over a **Google Sheet** invoice ledger. It shows per-person
+spend (Russo / Tim), tracks reimbursements, and lets you upload new invoices straight into the
+right Google Drive folder + a new sheet row. Hosted on Vercel, password-protected for the team.
 
-## What this gives you
+> This replaced an earlier Notion-backed *subscription* tracker. The single source of truth is now
+> the Google Sheet "Invoice Summary — Paid by Tim & Russo".
 
-- Live dashboard with Monthly Burn, Annual Run Rate, One-time Spend, Pending Info Count
-- Category breakdown bars
-- Sortable table of all expenses
-- Add, edit, and cancel expenses (writes directly to Notion)
-- Basic Auth so only your team can access
-- Mobile-friendly
+## What it does
 
-## Setup (about 30 minutes)
-
-### 1. Create a Notion integration (5 min)
-
-1. Go to https://www.notion.so/my-integrations
-2. Click "New integration"
-3. Name it "Tigeri Expense Dashboard"
-4. Workspace: select your workspace
-5. Type: Internal
-6. Save and copy the "Internal Integration Secret" (starts with `secret_`)
-
-### 2. Share the database with the integration (1 min)
-
-1. Open your Tigeri Expense Tracker database in Notion
-2. Click the "..." menu in the top-right
-3. Click "Connections" then "Connect to" and select "Tigeri Expense Dashboard"
-
-### 3. Get your database ID (1 min)
-
-The database URL looks like: `https://www.notion.so/<workspace>/437e88b1b1b14bb7ace0d455b251720b`
-
-The database ID is the 32-character string at the end: `437e88b1b1b14bb7ace0d455b251720b`
-
-(For your existing database, this is already known: `437e88b1-b1b1-4bb7-ace0-d455b251720b`)
-
-### 4. Push to GitHub (5 min)
-
-```bash
-cd tigeri-dashboard
-git init
-git add .
-git commit -m "Initial commit"
-gh repo create tigeri-dashboard --private --source=. --push
-```
-
-Or use GitHub Desktop / the GitHub website to upload the folder.
-
-### 5. Deploy to Vercel (5 min)
-
-1. Go to https://vercel.com/new
-2. Import your GitHub repo
-3. Framework Preset: Next.js (auto-detected)
-4. In "Environment Variables", add:
-   - `NOTION_TOKEN` = the integration secret from step 1
-   - `NOTION_DATABASE_ID` = `437e88b1-b1b1-4bb7-ace0-d455b251720b`
-   - `BASIC_AUTH_USER` = `tigeri` (or any username)
-   - `BASIC_AUTH_PASS` = a strong password you'll share with the team
-5. Click "Deploy"
-
-In about 2 minutes you'll get a URL like `https://tigeri-dashboard.vercel.app`. Anyone with that URL plus the username/password can use the dashboard.
-
-### 6. Share with the team (1 min)
-
-Send your team the URL and credentials. They'll be prompted to enter the username and password the first time they visit. Browser remembers it after that.
-
-## Local development
-
-```bash
-cp .env.local.example .env.local
-# Edit .env.local with your values
-npm install
-npm run dev
-```
-
-Open http://localhost:3000.
-
-## Customization
-
-- **Branding**: All TigerScale design tokens are in `app/globals.css` as CSS variables
-- **Schema changes**: If you add or rename a property in Notion, update `lib/types.ts` and `lib/notion.ts`
-- **Auth upgrade**: For Google OAuth restricted to @tigeri.ai emails, swap the basic auth in `middleware.ts` for NextAuth
+- **Dashboard** — total spend, split by person (Tim / Russo), spend by vendor, recent invoices, with All/Russo/Tim and month filters
+- **Invoices** — the full ledger: sortable, filterable (person / reimbursement / search), CSV export, and the **+ Add invoice** drop-zone
+- **Reimbursements** — Tim reimburses Russo's out-of-pocket costs on the 15th; shows what's outstanding, settled history, and a one-click **Mark settled**
+- **Add invoice** — drop a PDF + fill the fields → the file is saved to `Tigeri Expenses / {Person} / {Period} / {Vendor}/` in Drive and a row is appended to the sheet with a link to the PDF
 
 ## Architecture
 
 ```
-Browser  →  Next.js API routes  →  Notion API  →  Database
-   ↑              (server-side, token never exposed to client)
-   ↓
-TigerScale UI (React + Tailwind)
+Browser ──► Next.js API routes ──► Google Sheet (read)  via CSV export
+                  │
+                  └──────────────► Apps Script web app ──► Google Sheet (write) + Google Drive
 ```
 
-The Notion integration token lives only in Vercel's server environment. The browser never sees it.
+- **Reads** use the sheet's public CSV export (`/export?format=csv`) — no credentials, parsed server-side in `lib/sheets.ts` (handles the row-9 header, FX'd USD amounts, `DD Mon YYYY` dates, and skips the total/footnote rows).
+- **Writes** (mark reimbursed, add invoice, delete) go through a Google **Apps Script web app** that runs as the sheet owner — this sidesteps Google Cloud service-account key restrictions. See `scripts/sheets-webapp.gs`.
+- **Auth**: HTTP Basic Auth via `middleware.ts`.
 
-## Files
+## Data model
 
-- `app/page.tsx` - Main dashboard
-- `app/api/expenses/route.ts` - GET (list) and POST (create) endpoints
-- `app/api/expenses/[id]/route.ts` - PATCH (update) and DELETE (soft-cancel) endpoints
-- `lib/notion.ts` - Notion API wrapper
-- `lib/types.ts` - TypeScript types
-- `middleware.ts` - Basic Auth gate
-- `components/` - Dashboard UI components
-- `app/globals.css` - TigerScale brand tokens
+Sheet columns (header is on row 9): `Paid By · Reimbursed · Vendor · Description · Invoice # · Date · Status · Orig. Amount · Cur. · Amount (USD) · Invoice Link`
 
-## Troubleshooting
+- `Paid By` = `Russo` | `Tim`
+- `Reimbursed` = blank (Tim's own) · `Pending` (Tim owes Russo) · `Tim` (settled)
+- `Amount (USD)` is the canonical, FX-converted figure; the dashboard always re-sums line items itself.
 
-**"Database not found" on first load**
+Drive layout: `Tigeri Expenses / {Person} / {Period e.g. "May-June"} / {Vendor} / invoice.pdf`
 
-The integration isn't connected to the database. Re-do step 2 in setup.
+## Environment variables
 
-**"Unauthorized" loop**
+| Var | Where | Purpose |
+|-----|-------|---------|
+| `BASIC_AUTH_USER` / `BASIC_AUTH_PASS` | Vercel + `.env.local` | Team login gate (omit locally to skip auth) |
+| `SHEETS_WEBAPP_URL` | Vercel + `.env.local` | Apps Script web-app `/exec` URL (writes) |
+| `SHEETS_WEBAPP_SECRET` | Vercel + `.env.local` | Shared secret the web app checks |
+| `GOOGLE_SHEET_ID` | optional | Override the source sheet (defaults to the baked-in ID) |
+| `SHEET_CSV_URL` | optional | Override the CSV read URL entirely |
 
-Browser cached the wrong credentials. Open in incognito or clear site data.
+`.env.local` is gitignored — secrets never get committed.
 
-**Need to add a new property**
+## The Apps Script web app (`scripts/sheets-webapp.gs`)
 
-Add the property in Notion first, then update `lib/types.ts` (Expense interface), `lib/notion.ts` (mapping functions), and the form/table components.
+Deployed from the sheet (**Extensions → Apps Script**) as a **Web app** (*Execute as: Me*, *Who has access: Anyone*). It exposes three secret-gated `doPost` actions:
 
-## Costs
+- `reimburse` — set the `Reimbursed` cell on a Russo row
+- `addInvoice` — save a base64 PDF to `Person/Period/Vendor/` + append a row
+- `deleteInvoice` — trash the PDF + delete the row (data rows only)
 
-- Vercel: free tier is fine for an internal tool of this size
-- Notion: uses your existing workspace, no extra cost
+> When the script gains a new capability (e.g. Drive), re-authorize by running a function that
+> exercises it (a `createFile` call) and approving the Drive permission. Editing code doesn't
+> publish — redeploy via **Manage deployments → Edit → New version**.
+
+## Local development
+
+```bash
+cp .env.local.example .env.local   # then fill in the values
+npm install
+npm run dev
+```
+
+Open http://localhost:3000. Reads work immediately; the write features need `SHEETS_WEBAPP_*` set.
+
+## Deploy
+
+Push to `main` → Vercel auto-deploys. Make sure the `SHEETS_WEBAPP_URL` / `SHEETS_WEBAPP_SECRET`
+env vars are set in the Vercel project, otherwise the write buttons error on the live site.
+
+## Project layout
+
+- `app/page.tsx` — orchestrator (sidebar + views, `?view=` routing)
+- `app/api/invoices/route.ts` — GET (list + summary), POST (mark reimbursed)
+- `app/api/invoices/add/route.ts` — POST a PDF + fields (add invoice)
+- `lib/sheets.ts` — sheet parsing + write client
+- `components/` — `Sidebar`, `TopBar`, `InvoiceDashboard`, `InvoicesTable`, `AddInvoice`, `ReimbursementsView`, `StatCard`, `ProfileTabs`, `MonthSelector`, `Toast`
+- `scripts/sheets-webapp.gs` — the Apps Script web app (source of truth; paste into Apps Script)
 
 ## License
 
