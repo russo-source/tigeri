@@ -29,7 +29,7 @@ export function BusinessesView({ invoices }: Props) {
     const map: Record<string, { total: number; count: number; tim: number; russo: number; byVendor: Record<string, number> }> = {};
     for (const i of invoices) {
       const raw = (i.business || "").trim();
-      const name = !raw || raw === "-" ? "Unassigned" : raw;
+      const name = !raw || raw === "-" ? "Infrastructure/Equipment" : raw;
       if (!map[name]) map[name] = { total: 0, count: 0, tim: 0, russo: 0, byVendor: {} };
       const m = map[name];
       m.total += i.amountUSD;

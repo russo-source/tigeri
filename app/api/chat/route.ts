@@ -47,7 +47,7 @@ INVOICES (JSON array):
 ${JSON.stringify(
       invoices.map((i) => ({
         vendor: i.vendor,
-        business: i.business,
+        business: i.business && i.business !== "-" ? i.business : "Infrastructure/Equipment",
         description: i.description,
         date: i.date,
         paidBy: i.paidBy,
