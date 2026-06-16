@@ -10,10 +10,11 @@ import { InvoicesTable } from "@/components/InvoicesTable";
 import { AddInvoice } from "@/components/AddInvoice";
 import { ReimbursementsView } from "@/components/ReimbursementsView";
 import { SalaryView } from "@/components/SalaryView";
+import { BusinessesView } from "@/components/BusinessesView";
 import { ChatBar } from "@/components/ChatBar";
 import { Toast } from "@/components/Toast";
 
-const VIEWS = ["dashboard", "invoices", "reimbursements", "salary", "settings", "gethelp"];
+const VIEWS = ["dashboard", "invoices", "reimbursements", "salary", "businesses", "settings", "gethelp"];
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -119,6 +120,7 @@ function DashboardInner() {
           )}
           {activeView === "reimbursements" && <ReimbursementsView invoices={invoices} onMarkSettled={markSettled} />}
           {activeView === "salary" && <SalaryView />}
+          {activeView === "businesses" && <BusinessesView invoices={invoices} />}
           {activeView === "settings" && <Placeholder title="Settings" />}
           {activeView === "gethelp" && <Placeholder title="Get Help" />}
         </main>

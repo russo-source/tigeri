@@ -23,6 +23,7 @@ const GROUPS: NavGroup[] = [
       { id: "invoices", label: "Invoices" },
       { id: "reimbursements", label: "Reimbursements" },
       { id: "salary", label: "Salary" },
+      { id: "businesses", label: "Businesses" },
     ],
   },
   {
