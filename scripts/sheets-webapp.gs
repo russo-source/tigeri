@@ -4,11 +4,15 @@
  * HEADER-AWARE: columns are located by their header name, so inserting or reordering
  * columns in the sheet (e.g. the "Business" column) will NOT break writes.
  *
+ * DATE-ORDERED: new invoices are inserted into the right place by their Date, not appended.
+ *
  * UPDATE / REDEPLOY:
  *   1. Open the sheet → Extensions → Apps Script
  *   2. Select-all, delete, paste THIS file
  *   3. Re-set SECRET below to YOUR value (pasting overwrote it)
- *   4. Save → Deploy → Manage deployments → ✏️ Edit → Version: "New version" → Deploy
+ *   4. (one-time clean-up of the two shifted rows) Run ▶ the function: fixLedger
+ *      — authorize if prompted; it repairs the misplaced columns and re-sorts those rows by date.
+ *   5. Save → Deploy → Manage deployments → ✏️ Edit → Version: "New version" → Deploy
  *      (the /exec URL stays the same)
  */
 const SECRET = "PASTE_A_LONG_RANDOM_STRING_HERE";
@@ -39,9 +43,37 @@ function headers_(sh) {
   values[hRow].forEach(function (name, c) { map[String(name).trim().toLowerCase()] = c + 1; });
   return {
     headerRow: hRow + 1,
+    width: values[hRow].length,
     values: values,
     col: function (name) { return map[String(name).toLowerCase()] || 0; },
   };
+}
+
+// Parse a date cell value (Date object or "dd Mon yyyy" / ISO string) -> ms timestamp, or NaN.
+function parseDate_(v) {
+  if (Object.prototype.toString.call(v) === "[object Date]" && !isNaN(v)) return v.getTime();
+  const s = String(v == null ? "" : v).trim();
+  if (!s) return NaN;
+  const M = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+  const m = s.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})$/);
+  if (m) { const mo = M[m[2].slice(0, 3).toLowerCase()]; if (mo != null) return new Date(+m[3], mo, +m[1]).getTime(); }
+  const d = new Date(s);
+  return isNaN(d) ? NaN : d.getTime();
+}
+
+// First data-row (1-based) whose Date is strictly after `ts`; else the row right after the last data row.
+function findInsertRow_(sh, H, ts) {
+  const dateCol = H.col("Date"), paidCol = H.col("Paid By");
+  let lastData = H.headerRow;
+  for (let i = 0; i < H.values.length; i++) {
+    const a = String(H.values[i][paidCol - 1]).trim();
+    if (a === "Tim" || a === "Russo") {
+      lastData = i + 1;
+      const rt = parseDate_(H.values[i][dateCol - 1]);
+      if (!isNaN(rt) && !isNaN(ts) && rt > ts) return i + 1; // insert before this row
+    }
+  }
+  return lastData + 1;
 }
 
 function doGet() {
@@ -91,15 +123,9 @@ function addInvoice_(body) {
 
   const sh = sheet_();
   const H = headers_(sh);
-  const paidByCol = H.col("Paid By");
-  // last data row = the last row whose Paid-By cell is Tim/Russo (above the totals block)
-  let lastData = H.headerRow;
-  for (let i = 0; i < H.values.length; i++) {
-    const a = String(H.values[i][paidByCol - 1]).trim();
-    if (a === "Tim" || a === "Russo") lastData = i + 1;
-  }
-  sh.insertRowAfter(lastData);
-  const r = lastData + 1;
+  // Insert in date order (falls back to after the last data row when the date is newest/unknown).
+  const r = findInsertRow_(sh, H, parseDate_(body.date));
+  sh.insertRowsBefore(r, 1);
   function set(name, val) { const c = H.col(name); if (c) sh.getRange(r, c).setValue(val); }
   set("Paid By", paidBy);
   set("Reimbursed", String(body.reimbursed || ""));
@@ -132,6 +158,68 @@ function deleteInvoice_(body) {
   }
   sh.deleteRow(row);
   return json_(out);
+}
+
+/**
+ * ONE-TIME clean-up. Repairs rows written by the OLD (pre-"Business") script, whose columns
+ * are shifted one slot left from "Business" onward (the Invoice-Link cell empty while the
+ * Amount-(USD) cell holds the =HYPERLINK formula). Un-shifts them, sets Business =
+ * "Tigerscale OC" (Anthropic credits), preserves the Drive link, and re-inserts each by Date.
+ * Run from the editor: select fixLedger ▶ Run.
+ */
+function fixLedger() {
+  const sh = sheet_();
+  let H = headers_(sh);
+  const paidCol = H.col("Paid By"), linkCol = H.col("Invoice Link"), amtCol = H.col("Amount (USD)");
+
+  // 1) Identify shifted rows.
+  const bad = [];
+  for (let i = 0; i < H.values.length; i++) {
+    const a = String(H.values[i][paidCol - 1]).trim();
+    if (a !== "Tim" && a !== "Russo") continue;
+    const r = i + 1;
+    const linkVal = String(sh.getRange(r, linkCol).getValue()).trim();
+    const amtFormula = String(sh.getRange(r, amtCol).getFormula());
+    if (linkVal === "" && /^=HYPERLINK/i.test(amtFormula)) bad.push(r);
+  }
+  if (!bad.length) return "nothing to fix";
+
+  // 2) Capture corrected content for each (values shifted back by one; Business was lost).
+  const fixed = bad.map(function (r) {
+    const vals = sh.getRange(r, 1, 1, H.width).getValues()[0];
+    const fors = sh.getRange(r, 1, 1, H.width).getFormulas()[0];
+    const at = function (name) { return vals[H.col(name) - 1]; };
+    return {
+      "Paid By": at("Paid By"),
+      "Reimbursed": at("Reimbursed"),
+      "Vendor": at("Vendor"),
+      "Business": "Tigerscale OC",
+      "Description": at("Business"),
+      "Invoice #": at("Description"),
+      "Date": at("Invoice #"),
+      "Status": at("Date"),
+      "Orig. Amount": Number(String(at("Status")).replace(/[$,]/g, "")) || 0,
+      "Cur.": at("Orig. Amount"),
+      "Amount (USD)": Number(String(at("Cur.")).replace(/[$,]/g, "")) || 0,
+      "_link": fors[H.col("Amount (USD)") - 1],
+    };
+  });
+
+  // 3) Remove the bad rows (bottom-up so indices stay valid).
+  bad.slice().sort(function (a, b) { return b - a; }).forEach(function (r) { sh.deleteRow(r); });
+
+  // 4) Re-insert each corrected row in date order.
+  fixed.forEach(function (o) {
+    H = headers_(sh);
+    const ins = findInsertRow_(sh, H, parseDate_(o["Date"]));
+    sh.insertRowsBefore(ins, 1);
+    const set = function (name, val) { const c = H.col(name); if (c) sh.getRange(ins, c).setValue(val); };
+    ["Paid By", "Reimbursed", "Vendor", "Business", "Description", "Invoice #", "Date", "Status", "Orig. Amount", "Cur.", "Amount (USD)"].forEach(function (n) { set(n, o[n]); });
+    const lc = H.col("Invoice Link");
+    if (lc && o["_link"]) sh.getRange(ins, lc).setFormula(o["_link"]);
+  });
+
+  return "fixed " + fixed.length + " row(s)";
 }
 
 // Run once to grant the Drive read/write permission.
