@@ -128,7 +128,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
           Add invoice
         </div>
         <div className="text-[13px] mt-1" style={{ color: "var(--text-secondary)" }}>
-          Drop a PDF and fill the details — it saves to Drive (Person / Period / Vendor) and adds a row to the sheet.
+          Drop a PDF — it reads the details automatically. You just pick who paid, the business, and reimbursement. Saves to Drive and the sheet.
         </div>
       </div>
       <form onSubmit={submit} className="px-6 pb-6 pt-2">
@@ -160,7 +160,22 @@ export function AddInvoice({ onAdded, showToast }: Props) {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Read-only summary of what the PDF read */}
+          {(vendor || amountUSD || invoiceNo) && (
+            <div className="rounded-lg p-4 mb-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}>
+              <div className="ts-label mb-1">From the invoice</div>
+              <div className="text-[15px] font-semibold" style={{ color: "var(--text-primary)" }}>
+                {vendor || "—"}
+                {amountUSD ? <span className="ml-2 font-mono">${Number(amountUSD).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> : null}
+              </div>
+              <div className="ts-mono-meta mt-1">
+                {[description, date, invoiceNo, currency && origAmount && currency !== "USD" ? `${origAmount} ${currency}` : "", status].filter(Boolean).join("  ·  ")}
+              </div>
+            </div>
+          )}
+
+          {/* The only things you choose — everything else is read from the PDF */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="ts-label">Paid by</label>
               <select className="ts-select" value={paidBy} onChange={(e) => setPaidByAndReimbursed(e.target.value)}>
@@ -175,46 +190,6 @@ export function AddInvoice({ onAdded, showToast }: Props) {
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label className="ts-label">Vendor</label>
-              <input className="ts-input" value={vendor} onChange={(e) => setVendor(e.target.value)} required placeholder="Anthropic" />
-            </div>
-            <div className="md:col-span-2">
-              <label className="ts-label">Description</label>
-              <input className="ts-input" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="API credit (one-time)" />
-            </div>
-            <div>
-              <label className="ts-label">Invoice #</label>
-              <input className="ts-input" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} />
-            </div>
-            <div>
-              <label className="ts-label">Date</label>
-              <input className="ts-input" type="date" value={date} onChange={(e) => setDateAndPeriod(e.target.value)} required />
-            </div>
-            <div>
-              <label className="ts-label">Period (Drive folder)</label>
-              <input className="ts-input" value={period} onChange={(e) => setPeriod(e.target.value)} placeholder="May-June" />
-            </div>
-            <div>
-              <label className="ts-label">Status</label>
-              <input className="ts-input" value={status} onChange={(e) => setStatus(e.target.value)} />
-            </div>
-            <div>
-              <label className="ts-label">Orig. amount</label>
-              <input className="ts-input" type="number" step="0.01" value={origAmount} onChange={(e) => { setOrigAmount(e.target.value); recalcUSD(e.target.value, currency); }} />
-            </div>
-            <div>
-              <label className="ts-label">Currency</label>
-              <select className="ts-select" value={currency} onChange={(e) => { setCurrency(e.target.value); recalcUSD(origAmount, e.target.value); }}>
-                <option>USD</option>
-                <option>INR</option>
-                <option>SGD</option>
-              </select>
-            </div>
-            <div>
-              <label className="ts-label">Amount (USD)</label>
-              <input className="ts-input" type="number" step="0.01" value={amountUSD} onChange={(e) => setAmountUSD(e.target.value)} />
             </div>
             <div>
               <label className="ts-label">Reimbursed</label>
