@@ -8,6 +8,7 @@ interface Props {
 }
 
 const RATES: Record<string, number> = { USD: 1, SGD: 0.7795, INR: 0.010565 };
+const BUSINESSES = ["Tigeri", "Tigerscale OC", "Infrastructure/Equipment"];
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const FULL = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -34,7 +35,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
 
   const [paidBy, setPaidBy] = useState("Russo");
   const [vendor, setVendor] = useState("");
-  const [business, setBusiness] = useState("");
+  const [business, setBusiness] = useState("Tigeri");
   const [description, setDescription] = useState("");
   const [invoiceNo, setInvoiceNo] = useState("");
   const [date, setDate] = useState("");
@@ -69,7 +70,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
       if (data.vendor) setVendor(data.vendor);
-      if (data.business) setBusiness(data.business);
+      if (data.business && BUSINESSES.includes(data.business)) setBusiness(data.business);
       if (data.description) setDescription(data.description);
       if (data.invoiceNo) setInvoiceNo(data.invoiceNo);
       if (data.date) setDateAndPeriod(String(data.date));
@@ -110,7 +111,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
       showToast("Invoice added to Drive + sheet");
-      setFile(null); setVendor(""); setBusiness(""); setDescription(""); setInvoiceNo("");
+      setFile(null); setVendor(""); setBusiness("Tigeri"); setDescription(""); setInvoiceNo("");
       setOrigAmount(""); setAmountUSD("");
       onAdded();
     } catch (err: any) {
@@ -168,12 +169,16 @@ export function AddInvoice({ onAdded, showToast }: Props) {
               </select>
             </div>
             <div>
-              <label className="ts-label">Vendor</label>
-              <input className="ts-input" value={vendor} onChange={(e) => setVendor(e.target.value)} required placeholder="Anthropic" />
+              <label className="ts-label">Business</label>
+              <select className="ts-select" value={business} onChange={(e) => setBusiness(e.target.value)}>
+                {BUSINESSES.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="ts-label">Business</label>
-              <input className="ts-input" value={business} onChange={(e) => setBusiness(e.target.value)} placeholder="Tigeri" />
+              <label className="ts-label">Vendor</label>
+              <input className="ts-input" value={vendor} onChange={(e) => setVendor(e.target.value)} required placeholder="Anthropic" />
             </div>
             <div className="md:col-span-2">
               <label className="ts-label">Description</label>
