@@ -203,6 +203,7 @@
     background: var(--bg-base);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
+    transition: box-shadow 160ms ease, border-color 160ms ease, transform 160ms ease;
   }
   .ts-badge {
     font-family: var(--tg-font-mono);
@@ -237,6 +238,43 @@
   .bg-gradient-flywheel {
     background: var(--gradient-flywheel);
   }
+}
+
+/* ── Hover interactions ── */
+.ts-card:hover {
+  box-shadow: 0 4px 16px rgba(20, 20, 63, 0.06);
+}
+.lift {
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(20, 20, 63, 0.14);
+  border-color: var(--border-strong);
+}
+.row-hover {
+  transition: background 140ms ease;
+}
+.row-hover:hover {
+  background: var(--bg-surface);
+}
+.chip {
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+.chip:hover {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+.ts-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+.dropzone {
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+.dropzone:hover {
+  border-color: var(--action-primary) !important;
+  background: var(--bg-raised) !important;
 }
 
 @keyframes spin {

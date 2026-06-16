@@ -5,6 +5,7 @@ import type { Invoice } from "@/lib/sheets";
 import { StatCard } from "./StatCard";
 import { ProfileTabs } from "./ProfileTabs";
 import { MonthSelector } from "./MonthSelector";
+import { salaryTotal } from "@/lib/salary";
 
 interface Props {
   invoices: Invoice[];
@@ -87,7 +88,12 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
 
       {/* Hero stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard gradient label="Total Spend" value={loading ? "—" : fmtUSD(stats.total)} sub={`${filtered.length} invoices`} />
+        <StatCard
+          gradient
+          label="Total Spend"
+          value={loading ? "—" : fmtUSD(stats.total + (profile === "all" ? salaryTotal() : 0))}
+          sub={profile === "all" ? "All invoices + salary" : `${filtered.length} invoices`}
+        />
         <StatCard label="Paid by Tim" value={loading ? "—" : fmtUSD(stats.tim)} sub={`${stats.timCount} invoices`} />
         <StatCard label="Paid by Russo" value={loading ? "—" : fmtUSD(stats.russo)} sub={`${stats.russoCount} invoices`} />
         <StatCard label="Tim owes Russo" value={loading ? "—" : fmtUSD(stats.owed)} sub={`${stats.pendingCount} pending`} />
@@ -102,7 +108,7 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
               <div className="text-center py-10 ts-mono-meta">No spend in this view</div>
             ) : (
               stats.vendors.map(([vendor, val], idx) => (
-                <div key={vendor} className="grid grid-cols-[120px_1fr_90px] items-center gap-3 py-2">
+                <div key={vendor} className="grid grid-cols-[120px_1fr_90px] items-center gap-3 py-2 px-2 -mx-2 rounded-md row-hover">
                   <div className="ts-mono-meta truncate">{vendor}</div>
                   <div className="h-2 rounded-pill overflow-hidden" style={{ background: "var(--bg-raised)" }}>
                     <div className="h-full rounded-pill" style={{ width: `${(val / vendorMax) * 100}%`, background: VENDOR_COLORS[idx % VENDOR_COLORS.length] }} />
@@ -123,7 +129,7 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
               <div className="text-center py-10 ts-mono-meta">Nothing here</div>
             ) : (
               recent.map((i) => (
-                <div key={i.id} className="flex items-center justify-between gap-3 px-5 py-3" style={{ borderColor: "var(--border-subtle)" }}>
+                <div key={i.id} className="flex items-center justify-between gap-3 px-5 py-3 row-hover" style={{ borderColor: "var(--border-subtle)" }}>
                   <div className="min-w-0">
                     <div className="font-medium text-[14px] truncate" style={{ color: "var(--text-primary)" }}>
                       {i.vendor} <span style={{ color: "var(--text-muted)" }}>· {i.description}</span>

@@ -7,8 +7,8 @@ interface Props {
 
 const TABS = [
   { id: "all", label: "All" },
-  { id: "Russo", label: "Russo" },
   { id: "Tim", label: "Tim" },
+  { id: "Russo", label: "Russo" },
 ];
 
 export function ProfileTabs({ active, onChange }: Props) {
@@ -24,6 +24,8 @@ export function ProfileTabs({ active, onChange }: Props) {
             key={t.id}
             type="button"
             onClick={() => onChange(t.id)}
+            onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--bg-overlay)"; }}
+            onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
             className="px-4 py-1.5 rounded-pill text-[13px] font-medium transition-all duration-150"
             style={
               isActive

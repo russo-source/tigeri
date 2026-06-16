@@ -133,7 +133,7 @@ export function InvoicesTable({ invoices }: Props) {
               <tr><td colSpan={6} className="text-center py-12 ts-mono-meta">No invoices match</td></tr>
             ) : (
               rows.map((i) => (
-                <tr key={i.id} className="border-b last:border-b-0" style={{ borderColor: "var(--border-subtle)" }}>
+                <tr key={i.id} className="border-b last:border-b-0 row-hover" style={{ borderColor: "var(--border-subtle)" }}>
                   <td className="px-4 py-3 align-middle font-mono text-[12px] whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>{i.rawDate || "—"}</td>
                   <td className="px-4 py-3 align-middle">
                     <div className="font-medium text-[13px]" style={{ color: "var(--text-primary)" }}>{i.vendor}</div>

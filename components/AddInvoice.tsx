@@ -26,7 +26,6 @@ function periodFor(iso: string): string {
 }
 
 export function AddInvoice({ onAdded, showToast }: Props) {
-  const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [drag, setDrag] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -81,7 +80,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
       if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
       showToast("Invoice added to Drive + sheet");
       setFile(null); setVendor(""); setDescription(""); setInvoiceNo("");
-      setOrigAmount(""); setAmountUSD(""); setOpen(false);
+      setOrigAmount(""); setAmountUSD("");
       onAdded();
     } catch (err: any) {
       showToast(`Add failed: ${err.message}`, true);
@@ -91,26 +90,23 @@ export function AddInvoice({ onAdded, showToast }: Props) {
   }
 
   return (
-    <section className="ts-card mb-6 overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex justify-between items-center px-5 py-3 font-semibold text-left"
-        style={{ color: "var(--text-primary)" }}
-      >
-        <span>+ Add invoice</span>
-        <span className="font-mono text-[11px]" style={{ color: "var(--text-muted)", transform: open ? "rotate(180deg)" : "" }}>▼</span>
-      </button>
-
-      {open && (
-        <form onSubmit={submit} className="p-5 border-t" style={{ borderColor: "var(--border-subtle)" }}>
+    <section className="ts-card mb-6">
+      <div className="px-6 pt-6 pb-2">
+        <div className="text-[20px] font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
+          Add invoice
+        </div>
+        <div className="text-[13px] mt-1" style={{ color: "var(--text-secondary)" }}>
+          Drop a PDF and fill the details — it saves to Drive (Person / Period / Vendor) and adds a row to the sheet.
+        </div>
+      </div>
+      <form onSubmit={submit} className="px-6 pb-6 pt-2">
           {/* Dropzone */}
           <div
             onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
             onDragLeave={() => setDrag(false)}
             onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files?.[0]; if (f) setFile(f); }}
             onClick={() => inputRef.current?.click()}
-            className="rounded-md p-6 mb-5 text-center cursor-pointer transition-colors"
+            className="dropzone rounded-lg p-12 mb-5 text-center cursor-pointer"
             style={{
               border: "2px dashed var(--border-strong)",
               background: drag ? "var(--bg-raised)" : "var(--bg-surface)",
@@ -122,7 +118,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
                 {file.name} <span className="ts-mono-meta">({(file.size / 1024).toFixed(0)} KB)</span>
               </div>
             ) : (
-              <div className="ts-mono-meta">Drop a PDF here, or click to choose</div>
+              <div className="text-[15px] font-medium" style={{ color: "var(--text-secondary)" }}>Drop a PDF here, or click to choose</div>
             )}
           </div>
 
@@ -188,10 +184,8 @@ export function AddInvoice({ onAdded, showToast }: Props) {
             <button type="submit" className="ts-btn ts-btn-primary" disabled={submitting}>
               {submitting ? <><span className="ts-loader mr-2" /> Uploading</> : "Add to Drive + sheet"}
             </button>
-            <button type="button" className="ts-btn ts-btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
           </div>
         </form>
-      )}
     </section>
   );
 }

@@ -1,21 +1,7 @@
 "use client";
 
 import { StatCard } from "./StatCard";
-
-interface SalaryEntry {
-  month: string;
-  date: string;
-  amount: number;
-  currency: string;
-  status: "Paid" | "Pending";
-}
-
-// $2,000/month to Russo in USDC, paid on the 15th.
-const SALARY: SalaryEntry[] = [
-  { month: "April 2026", date: "Apr 15, 2026", amount: 2000, currency: "USDC", status: "Paid" },
-  { month: "May 2026", date: "May 19, 2026", amount: 2000, currency: "USDC", status: "Paid" },
-  { month: "June 2026", date: "Jun 15, 2026", amount: 2000, currency: "USDC", status: "Pending" },
-];
+import { SALARY } from "@/lib/salary";
 
 function fmtUSD(n: number): string {
   return "$" + (Number(n) || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -53,7 +39,7 @@ export function SalaryView() {
       <div className="ts-label">Payments</div>
       <section className="ts-card divide-y" style={{ borderColor: "var(--border-subtle)" }}>
         {SALARY.map((s, i) => (
-          <div key={i} className="flex items-center justify-between gap-3 px-5 py-4" style={{ borderColor: "var(--border-subtle)" }}>
+          <div key={i} className="flex items-center justify-between gap-3 px-5 py-4 row-hover" style={{ borderColor: "var(--border-subtle)" }}>
             <div className="min-w-0">
               <div className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>{s.month} salary</div>
               <div className="ts-mono-meta">{s.date} · {s.currency} · Russo</div>

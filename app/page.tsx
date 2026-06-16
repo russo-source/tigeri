@@ -10,6 +10,7 @@ import { InvoicesTable } from "@/components/InvoicesTable";
 import { AddInvoice } from "@/components/AddInvoice";
 import { ReimbursementsView } from "@/components/ReimbursementsView";
 import { SalaryView } from "@/components/SalaryView";
+import { ChatBar } from "@/components/ChatBar";
 import { Toast } from "@/components/Toast";
 
 const VIEWS = ["dashboard", "invoices", "reimbursements", "salary", "settings", "gethelp"];
@@ -99,6 +100,7 @@ function DashboardInner() {
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar syncedAt={syncedAt} status={status} />
         <main className="flex-1 w-full max-w-[1280px] mx-auto px-8 py-8">
+          <ChatBar />
           {errorBanner && (
             <div
               className="rounded-md px-4 py-3 mb-6 text-[13px]"

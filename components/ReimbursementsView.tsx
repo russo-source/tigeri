@@ -70,7 +70,7 @@ export function ReimbursementsView({ invoices, onMarkSettled }: Props) {
           <div className="text-center py-10 ts-mono-meta">Nothing outstanding — all settled 🎉</div>
         ) : (
           pending.map((i) => (
-            <div key={i.id} className="flex items-center justify-between gap-3 px-5 py-3" style={{ borderColor: "var(--border-subtle)" }}>
+            <div key={i.id} className="flex items-center justify-between gap-3 px-5 py-3 row-hover" style={{ borderColor: "var(--border-subtle)" }}>
               <div className="min-w-0">
                 <div className="font-medium text-[14px] truncate" style={{ color: "var(--text-primary)" }}>
                   {i.vendor} <span style={{ color: "var(--text-muted)" }}>· {i.description}</span>
@@ -95,7 +95,7 @@ export function ReimbursementsView({ invoices, onMarkSettled }: Props) {
           <div className="text-center py-10 ts-mono-meta">No reimbursements yet</div>
         ) : (
           settled.map((i) => (
-            <div key={i.id} className="flex items-center justify-between gap-3 px-5 py-3" style={{ borderColor: "var(--border-subtle)" }}>
+            <div key={i.id} className="flex items-center justify-between gap-3 px-5 py-3 row-hover" style={{ borderColor: "var(--border-subtle)" }}>
               <div className="min-w-0">
                 <div className="font-medium text-[14px] truncate" style={{ color: "var(--text-primary)" }}>
                   {i.vendor} <span style={{ color: "var(--text-muted)" }}>· {i.description}</span>

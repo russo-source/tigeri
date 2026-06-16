@@ -11,7 +11,7 @@ export function StatCard({ label, value, sub, gradient }: Props) {
   if (gradient) {
     return (
       <div
-        className="rounded-lg p-6 text-white"
+        className="rounded-lg p-6 text-white lift"
         style={{
           background:
             "linear-gradient(135deg, #3537D7 0%, #55ADE5 50%, #1AA9A4 100%)",
@@ -36,7 +36,7 @@ export function StatCard({ label, value, sub, gradient }: Props) {
   }
 
   return (
-    <div className="ts-card p-6">
+    <div className="ts-card p-6 lift">
       <div className="ts-label">{label}</div>
       <div
         className="font-semibold mt-2"
