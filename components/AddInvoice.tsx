@@ -29,6 +29,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [drag, setDrag] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [paidBy, setPaidBy] = useState("Russo");
@@ -55,6 +56,34 @@ export function AddInvoice({ onAdded, showToast }: Props) {
   function setPaidByAndReimbursed(v: string) {
     setPaidBy(v);
     setReimbursed(v === "Russo" ? "Pending" : "");
+  }
+
+  // Drop/choose a file → auto-read it with Claude and pre-fill every field but "Paid by".
+  async function onFile(f: File) {
+    setFile(f);
+    setExtracting(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", f);
+      const res = await fetch("/api/invoices/extract", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      if (data.vendor) setVendor(data.vendor);
+      if (data.business) setBusiness(data.business);
+      if (data.description) setDescription(data.description);
+      if (data.invoiceNo) setInvoiceNo(data.invoiceNo);
+      if (data.date) setDateAndPeriod(String(data.date));
+      if (data.status) setStatus(data.status);
+      if (data.origAmount) setOrigAmount(String(data.origAmount));
+      if (data.currency) setCurrency(data.currency);
+      if (data.amountUSD) setAmountUSD(String(data.amountUSD));
+      else if (data.origAmount && data.currency) recalcUSD(String(data.origAmount), data.currency);
+      showToast("Invoice read — just set who paid it");
+    } catch (err: any) {
+      showToast(`Couldn't auto-read (fill manually): ${err.message}`, true);
+    } finally {
+      setExtracting(false);
+    }
   }
 
   async function submit(e: React.FormEvent) {
@@ -106,7 +135,7 @@ export function AddInvoice({ onAdded, showToast }: Props) {
           <div
             onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
             onDragLeave={() => setDrag(false)}
-            onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files?.[0]; if (f) setFile(f); }}
+            onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files?.[0]; if (f) onFile(f); }}
             onClick={() => inputRef.current?.click()}
             className="dropzone rounded-lg p-12 mb-5 text-center cursor-pointer"
             style={{
@@ -114,13 +143,19 @@ export function AddInvoice({ onAdded, showToast }: Props) {
               background: drag ? "var(--bg-raised)" : "var(--bg-surface)",
             }}
           >
-            <input ref={inputRef} type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setFile(f); }} />
+            <input ref={inputRef} type="file" accept="application/pdf,.pdf,image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
             {file ? (
               <div className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>
-                {file.name} <span className="ts-mono-meta">({(file.size / 1024).toFixed(0)} KB)</span>
+                {extracting ? (
+                  <><span className="ts-loader mr-2" /> Reading {file.name} …</>
+                ) : (
+                  <>{file.name} <span className="ts-mono-meta">({(file.size / 1024).toFixed(0)} KB)</span></>
+                )}
               </div>
             ) : (
-              <div className="text-[15px] font-medium" style={{ color: "var(--text-secondary)" }}>Drop a PDF here, or click to choose</div>
+              <div className="text-[15px] font-medium" style={{ color: "var(--text-secondary)" }}>
+                Drop a PDF here — I'll read the details automatically
+              </div>
             )}
           </div>
 
