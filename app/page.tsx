@@ -9,9 +9,10 @@ import { InvoiceDashboard } from "@/components/InvoiceDashboard";
 import { InvoicesTable } from "@/components/InvoicesTable";
 import { AddInvoice } from "@/components/AddInvoice";
 import { ReimbursementsView } from "@/components/ReimbursementsView";
+import { SalaryView } from "@/components/SalaryView";
 import { Toast } from "@/components/Toast";
 
-const VIEWS = ["dashboard", "invoices", "reimbursements", "settings", "gethelp"];
+const VIEWS = ["dashboard", "invoices", "reimbursements", "salary", "settings", "gethelp"];
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -115,6 +116,7 @@ function DashboardInner() {
             </>
           )}
           {activeView === "reimbursements" && <ReimbursementsView invoices={invoices} onMarkSettled={markSettled} />}
+          {activeView === "salary" && <SalaryView />}
           {activeView === "settings" && <Placeholder title="Settings" />}
           {activeView === "gethelp" && <Placeholder title="Get Help" />}
         </main>
