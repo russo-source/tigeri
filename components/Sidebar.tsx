@@ -20,17 +20,8 @@ const GROUPS: NavGroup[] = [
     eyebrow: "Main",
     items: [
       { id: "dashboard", label: "Dashboard" },
-      { id: "services", label: "Services" },
-      { id: "renewals", label: "Renewals" },
+      { id: "invoices", label: "Invoices" },
       { id: "reimbursements", label: "Reimbursements" },
-      { id: "forecast", label: "Forecast" },
-    ],
-  },
-  {
-    eyebrow: "Operations",
-    items: [
-      { id: "operations", label: "Operating Costs" },
-      { id: "inbox", label: "Inbox" },
     ],
   },
   {
@@ -93,7 +84,7 @@ export function Sidebar({ activeView, onChange }: Props) {
             className="font-mono text-[10px] uppercase tracking-[0.14em]"
             style={{ color: "#4F4F9B" }}
           >
-            Expense Tracker
+            Invoice Tracker
           </div>
         </div>
       </div>

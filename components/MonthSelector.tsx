@@ -7,7 +7,7 @@ interface Props {
   onChange: (id: string) => void;
 }
 
-const OPTIONS = ["All Time", "Jul 2026", "Jun 2026", "May 2026", "Apr 2026"];
+const OPTIONS = ["All Time", "Jun 2026", "May 2026", "Apr 2026", "Mar 2026"];
 
 export function MonthSelector({ active, onChange }: Props) {
   const [open, setOpen] = useState(false);
