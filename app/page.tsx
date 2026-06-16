@@ -3,22 +3,27 @@
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { Expense, ExpenseInput } from "@/lib/types";
-import { Header } from "@/components/Header";
-import { TabNav } from "@/components/TabNav";
-import { OverviewTab } from "@/components/OverviewTab";
-import { ForecastTab } from "@/components/ForecastTab";
-import { RenewalsTab } from "@/components/RenewalsTab";
+import { Sidebar } from "@/components/Sidebar";
+import { TopBar } from "@/components/TopBar";
+import { DashboardView } from "@/components/DashboardView";
 import { ExpensesTab } from "@/components/ExpensesTab";
+import { RenewalsTab } from "@/components/RenewalsTab";
+import { ForecastTab } from "@/components/ForecastTab";
 import { InboxTab } from "@/components/InboxTab";
 import { Toast } from "@/components/Toast";
 
-const TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "forecast", label: "Forecast" },
-  { id: "renewals", label: "Renewals" },
-  { id: "expenses", label: "Expenses" },
-  { id: "inbox", label: "Inbox" },
+const VIEWS = [
+  "dashboard",
+  "services",
+  "renewals",
+  "forecast",
+  "operations",
+  "reimbursements",
+  "inbox",
 ];
+
+const REIMBURSEMENTS_URL =
+  "https://www.notion.so/2eaa35e1b3df4119af4dc5ed0e54f7c1";
 
 function monthlyEquivalent(e: Expense): number {
   if (e.status !== "Active") return 0;
@@ -27,11 +32,50 @@ function monthlyEquivalent(e: Expense): number {
   return 0;
 }
 
+function ReimbursementsPlaceholder() {
+  return (
+    <>
+      <div className="ts-label">Reimbursements</div>
+      <section className="ts-card p-12 text-center">
+        <div className="max-w-[480px] mx-auto">
+          <div
+            className="font-mono text-[11px] uppercase tracking-wider mb-3"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Tracked in Notion
+          </div>
+          <h2
+            className="text-[22px] font-semibold mb-4 tracking-tight"
+            style={{ color: "var(--text-primary)" }}
+          >
+            Reimbursements live in Notion
+          </h2>
+          <p
+            className="text-[14px] leading-relaxed mb-6"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Team reimbursement requests and approvals are managed in the shared
+            Notion database. Open it to submit or review a claim.
+          </p>
+          <a
+            href={REIMBURSEMENTS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ts-btn ts-btn-primary inline-block"
+          >
+            Open in Notion
+          </a>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function DashboardInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const tabParam = searchParams?.get("tab") || "overview";
-  const activeTab = TABS.some((t) => t.id === tabParam) ? tabParam : "overview";
+  const viewParam = searchParams?.get("view") || "dashboard";
+  const activeView = VIEWS.includes(viewParam) ? viewParam : "dashboard";
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
@@ -76,8 +120,8 @@ function DashboardInner() {
     loadExpenses(false);
   }, [loadExpenses]);
 
-  function changeTab(id: string) {
-    router.push(`/?tab=${id}`);
+  function changeView(id: string) {
+    router.push(`/?view=${id}`);
   }
 
   async function handleSubmit(input: ExpenseInput, editingId: string | null) {
@@ -138,6 +182,7 @@ function DashboardInner() {
       "Vendor",
       "Category",
       "Account",
+      "Paid By",
       "Amount",
       "Cycle",
       "MonthlyEquivalent",
@@ -150,6 +195,7 @@ function DashboardInner() {
       e.vendor,
       e.category,
       e.account,
+      e.paidByName || e.paidBy || "",
       e.amount,
       e.cycle,
       monthlyEquivalent(e).toFixed(2),
@@ -178,35 +224,52 @@ function DashboardInner() {
   }
 
   return (
-    <>
-      <Header status={status} syncedAt={syncedAt} />
-      <TabNav tabs={TABS} activeTab={activeTab} onChange={changeTab} />
-      <main className="max-w-[1280px] mx-auto px-6 py-8">
-        {errorBanner && (
-          <div className="bg-[#fef2f2] border border-[#dc2626] rounded-sm px-4 py-3 mb-4 text-[#dc2626] text-[13px]">
-            {errorBanner}
-          </div>
-        )}
+    <div className="flex min-h-screen">
+      <Sidebar activeView={activeView} onChange={changeView} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <TopBar syncedAt={syncedAt} status={status} />
+        <main className="flex-1 w-full max-w-[1280px] mx-auto px-8 py-8">
+          {errorBanner && (
+            <div
+              className="rounded-md px-4 py-3 mb-6 text-[13px]"
+              style={{
+                background: "rgba(192, 38, 60, 0.08)",
+                border: "1px solid var(--status-error)",
+                color: "var(--status-error)",
+              }}
+            >
+              {errorBanner}
+            </div>
+          )}
 
-        {activeTab === "overview" && (
-          <OverviewTab expenses={expenses} loading={status === "loading"} />
-        )}
-        {activeTab === "forecast" && <ForecastTab expenses={expenses} />}
-        {activeTab === "renewals" && <RenewalsTab expenses={expenses} />}
-        {activeTab === "expenses" && (
-          <ExpensesTab
-            expenses={expenses}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            onRefresh={() => loadExpenses(true)}
-            refreshing={refreshing}
-            onExport={handleExport}
-          />
-        )}
-        {activeTab === "inbox" && <InboxTab />}
-      </main>
+          {activeView === "dashboard" && (
+            <DashboardView expenses={expenses} loading={status === "loading"} />
+          )}
+          {activeView === "services" && (
+            <ExpensesTab
+              expenses={expenses}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              onRefresh={() => loadExpenses(true)}
+              refreshing={refreshing}
+              onExport={handleExport}
+            />
+          )}
+          {activeView === "renewals" && <RenewalsTab expenses={expenses} />}
+          {activeView === "forecast" && <ForecastTab expenses={expenses} />}
+          {activeView === "operations" && (
+            <DashboardView
+              expenses={expenses}
+              loading={status === "loading"}
+              operatingCostsOnly
+            />
+          )}
+          {activeView === "reimbursements" && <ReimbursementsPlaceholder />}
+          {activeView === "inbox" && <InboxTab />}
+        </main>
+      </div>
       <Toast message={toast?.msg || null} isError={toast?.error} />
-    </>
+    </div>
   );
 }
 
@@ -214,7 +277,7 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center font-mono text-[12px] uppercase tracking-wider text-[#6b7280]">
+        <div className="min-h-screen flex items-center justify-center font-mono text-[12px] uppercase tracking-wider text-ink-500">
           Loading
         </div>
       }

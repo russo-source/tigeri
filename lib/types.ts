@@ -31,6 +31,10 @@ export interface Expense {
   status: Status;
   notes: string;
   monthlyEquivalent: number;
+  /** Normalized first name for filtering: "Russo" | "Tim" (undefined if unset). */
+  paidBy?: string;
+  /** Full display name from the Notion "Paid by" people property, e.g. "Russo Jossy". */
+  paidByName?: string;
 }
 
 export interface ExpenseInput {

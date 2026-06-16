@@ -41,8 +41,22 @@ function getFormulaNumber(prop: any): number {
   return 0;
 }
 
+// Notion "people" property → { full name, normalized first name for filtering }
+function getPaidBy(prop: any): { paidBy?: string; paidByName?: string } {
+  if (!prop || prop.type !== "people" || !Array.isArray(prop.people) || prop.people.length === 0) {
+    return {};
+  }
+  const paidByName: string | undefined = prop.people[0]?.name || undefined;
+  let paidBy = paidByName;
+  // Normalize to first name so the dashboard profile filter can match "Russo" / "Tim"
+  if (paidBy?.startsWith("Russo")) paidBy = "Russo";
+  else if (paidBy?.startsWith("Tim")) paidBy = "Tim";
+  return { paidBy, paidByName };
+}
+
 function pageToExpense(page: any): Expense {
   const props = page.properties || {};
+  const { paidBy, paidByName } = getPaidBy(props["Paid by"]);
   return {
     id: page.id,
     name: getTitle(props["Name"]),
@@ -55,6 +69,8 @@ function pageToExpense(page: any): Expense {
     status: (getSelect(props["Status"]) as Status) || "Active",
     notes: getRichText(props["Notes"]),
     monthlyEquivalent: getFormulaNumber(props["Monthly Equivalent"]),
+    paidBy,
+    paidByName,
   };
 }
 

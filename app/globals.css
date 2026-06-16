@@ -1,10 +1,60 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  /* ── Brand v2: ink ramp ── */
+  --ink-50: #ebf0f7;
+  --ink-100: #f0f4f8;
+  --ink-200: #dce6f4;
+  --ink-300: #9ab6dd;
+  --ink-400: #7178c2;
+  --ink-500: #4f4f9b;
+  --ink-600: #2f397a;
+  --ink-700: #1f235a;
+  --ink-800: #14143f;
+  --ink-900: #0a0a27;
+  --ink-1000: #02010b;
+
+  /* ── Brand hues ── */
+  --tigerscale: #3537d7;
+  --navy: #040273;
+  --cyan: #55ade5;
+  --violet: #6764cf;
+  --teal: #1aa9a4;
+  --gradient-flywheel: linear-gradient(135deg, #3537d7 0%, #55ade5 50%, #1aa9a4 100%);
+
+  /* ── Semantic (light theme) ── */
+  --bg-base: #ffffff;
+  --bg-surface: #f0f4f8;
+  --bg-raised: #dce6f4;
+  --bg-overlay: #ffffff;
+  --border-subtle: #dce6f4;
+  --border-strong: #9ab6dd;
+  --text-primary: #14143f;
+  --text-secondary: #55556b;
+  --text-muted: #8a8fb0;
+  --action-primary: #3537d7;
+  --action-primary-hover: #2a2bb0;
+  --status-success: #2e6b16;
+  --status-info: #1f6fa8;
+  --status-warning: #9c5700;
+  --status-error: #c0263c;
+
+  /* ── Typography ── */
+  --tg-font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --tg-font-mono: "IBM Plex Mono", "SF Mono", Consolas, monospace;
+
+  /* ── Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-pill: 20px;
+
+  /* ── Legacy compat: still referenced by inline styles in untouched components ── */
   --color-navy: #040273;
   --color-navy-dark: #030252;
   --color-navy-darker: #020141;
@@ -21,59 +71,84 @@
   --color-info: #0284c7;
 }
 
+[data-theme="dark"] {
+  --bg-base: #02010b;
+  --bg-surface: #0a0a27;
+  --bg-raised: #14143f;
+  --bg-overlay: #1f235a;
+  --border-subtle: #1f235a;
+  --border-strong: #2f397a;
+  --text-primary: #ebf0f7;
+  --text-secondary: #9ab6dd;
+  --text-muted: #7178c2;
+  --action-primary: #3537d7;
+  --action-primary-hover: #4f52e6;
+  --status-success: #4fb06a;
+  --status-info: #55ade5;
+  --status-warning: #e8a020;
+  --status-error: #ff6b82;
+}
+
 @layer base {
   body {
-    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--tg-font-sans);
     font-size: 14px;
-    color: var(--color-text-primary);
-    background: var(--color-surface-light);
+    color: var(--text-primary);
+    background: var(--bg-surface);
     line-height: 1.5;
   }
 }
 
 @layer components {
   .ts-label {
-    font-family: "IBM Plex Mono", monospace;
+    font-family: var(--tg-font-mono);
     font-size: 11px;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-text-secondary);
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
     margin-bottom: 8px;
     display: block;
+  }
+  .ts-mono-meta {
+    font-family: var(--tg-font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
   }
   .ts-input,
   .ts-select,
   .ts-textarea {
     width: 100%;
-    background: var(--color-white);
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
     padding: 12px;
-    font-family: "IBM Plex Sans", sans-serif;
+    font-family: var(--tg-font-sans);
     font-size: 14px;
-    color: var(--color-text-primary);
+    color: var(--text-primary);
     transition: border-color 150ms ease;
   }
   .ts-input:focus,
   .ts-select:focus,
   .ts-textarea:focus {
-    outline: 2px solid var(--color-navy);
+    outline: 2px solid var(--action-primary);
     outline-offset: 2px;
-    border-color: var(--color-navy);
+    border-color: var(--action-primary);
   }
   .ts-input[type="number"] {
-    font-family: "IBM Plex Mono", monospace;
+    font-family: var(--tg-font-mono);
   }
   .ts-textarea {
     resize: vertical;
     min-height: 60px;
   }
   .ts-btn {
-    font-family: "IBM Plex Sans", sans-serif;
+    font-family: var(--tg-font-sans);
     font-size: 14px;
     font-weight: 500;
-    border-radius: 2px;
+    border-radius: var(--radius-md);
     padding: 12px 24px;
     cursor: pointer;
     transition: background 150ms ease, color 150ms ease, transform 150ms ease;
@@ -85,84 +160,82 @@
     pointer-events: none;
   }
   .ts-btn-primary {
-    background: var(--color-navy);
-    color: var(--color-white);
-    border-color: var(--color-navy);
+    background: var(--action-primary);
+    color: #ffffff;
+    border-color: var(--action-primary);
   }
   .ts-btn-primary:hover {
-    background: var(--color-navy-dark);
-    border-color: var(--color-navy-dark);
+    background: var(--action-primary-hover);
+    border-color: var(--action-primary-hover);
   }
   .ts-btn-primary:active {
-    background: var(--color-navy-darker);
     transform: scale(0.98);
   }
   .ts-btn-secondary {
-    background: var(--color-white);
-    color: var(--color-navy);
-    border-color: var(--color-navy);
+    background: var(--bg-base);
+    color: var(--action-primary);
+    border-color: var(--action-primary);
   }
   .ts-btn-secondary:hover {
-    background: var(--color-surface-blue);
+    background: var(--bg-surface);
   }
   .ts-btn-ghost {
     background: transparent;
-    color: var(--color-text-secondary);
+    color: var(--text-secondary);
     border-color: transparent;
     padding: 8px 12px;
   }
   .ts-btn-ghost:hover {
-    background: var(--color-surface-light);
-    color: var(--color-navy);
+    background: var(--bg-surface);
+    color: var(--action-primary);
   }
   .ts-btn-danger-ghost {
     background: transparent;
-    color: var(--color-error);
+    color: var(--status-error);
     border-color: transparent;
     padding: 8px 12px;
     font-size: 12px;
   }
   .ts-btn-danger-ghost:hover {
-    background: var(--color-surface-light);
+    background: var(--bg-surface);
   }
   .ts-card {
-    background: var(--color-white);
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
   }
   .ts-badge {
-    font-family: "IBM Plex Mono", monospace;
+    font-family: var(--tg-font-mono);
     font-size: 11px;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 2px 8px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     display: inline-block;
-    background: var(--color-white);
+    background: var(--bg-base);
   }
   .ts-badge-active {
-    color: var(--color-success);
-    border: 1px solid var(--color-success);
+    color: var(--status-success);
+    border: 1px solid var(--status-success);
   }
   .ts-badge-pending {
-    color: var(--color-warning);
-    border: 1px solid var(--color-warning);
+    color: var(--status-warning);
+    border: 1px solid var(--status-warning);
   }
   .ts-badge-cancelled {
-    color: var(--color-text-tertiary);
-    border: 1px solid var(--color-text-tertiary);
+    color: var(--text-muted);
+    border: 1px solid var(--text-muted);
   }
   .ts-badge-trial {
-    color: var(--color-info);
-    border: 1px solid var(--color-info);
+    color: var(--status-info);
+    border: 1px solid var(--status-info);
   }
-  .ts-mono-meta {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-text-secondary);
+}
+
+@layer utilities {
+  .bg-gradient-flywheel {
+    background: var(--gradient-flywheel);
   }
 }
 
@@ -172,8 +245,8 @@
   }
 }
 .ts-loader {
-  border: 2px solid var(--color-border);
-  border-top-color: var(--color-navy);
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--action-primary);
   border-radius: 50%;
   width: 14px;
   height: 14px;
@@ -183,8 +256,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 .ts-pulse {
   animation: pulse 1.2s ease-in-out infinite;
