@@ -94,7 +94,11 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
           value={loading ? "—" : fmtUSD(stats.total + (profile === "all" ? salaryTotal() : 0))}
           sub={profile === "all" ? "All invoices + salary" : `${filtered.length} invoices`}
         />
-        <StatCard label="Paid by Tim" value={loading ? "—" : fmtUSD(stats.tim)} sub={`${stats.timCount} invoices`} />
+        <StatCard
+          label="Paid by Tim"
+          value={loading ? "—" : fmtUSD(stats.tim + (profile === "all" ? salaryTotal() : 0))}
+          sub={profile === "all" ? `${stats.timCount} invoices + salary` : `${stats.timCount} invoices`}
+        />
         <StatCard label="Paid by Russo" value={loading ? "—" : fmtUSD(stats.russo)} sub={`${stats.russoCount} invoices`} />
         <StatCard label="Tim owes Russo" value={loading ? "—" : fmtUSD(stats.owed)} sub={`${stats.pendingCount} pending`} />
       </div>
