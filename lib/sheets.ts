@@ -153,6 +153,42 @@ export async function markReimbursed(row: number, reimbursed: string): Promise<v
   }
 }
 
+export interface AddInvoicePayload {
+  paidBy: string;
+  period: string;
+  vendor: string;
+  description: string;
+  invoiceNo: string;
+  date: string; // "DD Mon YYYY" to match the sheet
+  status: string;
+  origAmount: number;
+  currency: string;
+  amountUSD: number;
+  reimbursed: string;
+  filename: string;
+  mimeType: string;
+  fileBase64: string;
+}
+
+// Upload a PDF to Drive (Person/Period/Vendor) and append a sheet row, via the Apps Script web app.
+export async function addInvoice(p: AddInvoicePayload): Promise<{ fileUrl: string; row: number; fileId: string }> {
+  if (!WEBAPP_URL || !WEBAPP_SECRET) {
+    throw new Error("Write endpoint not configured (set SHEETS_WEBAPP_URL / SHEETS_WEBAPP_SECRET)");
+  }
+  const res = await fetch(WEBAPP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ secret: WEBAPP_SECRET, action: "addInvoice", ...p }),
+    redirect: "follow",
+    cache: "no-store",
+  });
+  const data: any = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) {
+    throw new Error(data?.error || `Add failed: HTTP ${res.status}`);
+  }
+  return { fileUrl: data.fileUrl, row: data.row, fileId: data.fileId };
+}
+
 export function summarize(invoices: Invoice[]): ReimbursementSummary {
   const byPerson: Record<string, number> = {};
   let total = 0, owedToRusso = 0, settledAmount = 0, pendingCount = 0;

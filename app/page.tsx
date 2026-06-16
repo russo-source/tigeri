@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { InvoiceDashboard } from "@/components/InvoiceDashboard";
 import { InvoicesTable } from "@/components/InvoicesTable";
+import { AddInvoice } from "@/components/AddInvoice";
 import { ReimbursementsView } from "@/components/ReimbursementsView";
 import { Toast } from "@/components/Toast";
 
@@ -107,7 +108,12 @@ function DashboardInner() {
           )}
 
           {activeView === "dashboard" && <InvoiceDashboard invoices={invoices} loading={status === "loading"} />}
-          {activeView === "invoices" && <InvoicesTable invoices={invoices} />}
+          {activeView === "invoices" && (
+            <>
+              <AddInvoice onAdded={() => loadInvoices(true)} showToast={showToast} />
+              <InvoicesTable invoices={invoices} />
+            </>
+          )}
           {activeView === "reimbursements" && <ReimbursementsView invoices={invoices} onMarkSettled={markSettled} />}
           {activeView === "settings" && <Placeholder title="Settings" />}
           {activeView === "gethelp" && <Placeholder title="Get Help" />}
