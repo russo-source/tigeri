@@ -20,10 +20,10 @@ const GROUPS: NavGroup[] = [
     eyebrow: "Main",
     items: [
       { id: "dashboard", label: "Dashboard" },
+      { id: "businesses", label: "Businesses" },
       { id: "invoices", label: "Invoices" },
       { id: "reimbursements", label: "Reimbursements" },
       { id: "salary", label: "Salary" },
-      { id: "businesses", label: "Businesses" },
     ],
   },
   {
@@ -34,6 +34,69 @@ const GROUPS: NavGroup[] = [
     ],
   },
 ];
+
+const iconProps = {
+  width: 16,
+  height: 16,
+  viewBox: "0 0 16 16",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.5,
+  strokeLinecap: "square" as const,
+  strokeLinejoin: "miter" as const,
+};
+
+const ICONS: Record<string, JSX.Element> = {
+  dashboard: (
+    <svg {...iconProps}>
+      <rect x="2" y="2" width="5" height="5" />
+      <rect x="9" y="2" width="5" height="5" />
+      <rect x="2" y="9" width="5" height="5" />
+      <rect x="9" y="9" width="5" height="5" />
+    </svg>
+  ),
+  businesses: (
+    <svg {...iconProps}>
+      <path d="M2.5 14V2.5h7V14" />
+      <path d="M9.5 6.5h4V14" />
+      <path d="M4.5 5h1M7 5h1M4.5 8h1M7 8h1M4.5 11h1M7 11h1" />
+    </svg>
+  ),
+  invoices: (
+    <svg {...iconProps}>
+      <path d="M3.5 2h6l3 3v9h-9z" />
+      <path d="M9.5 2v3h3" />
+      <path d="M6 8.5h4M6 11h4" />
+    </svg>
+  ),
+  reimbursements: (
+    <svg {...iconProps}>
+      <path d="M12.5 7a4.5 4.5 0 0 0-8.2-2.3" />
+      <path d="M3.5 9a4.5 4.5 0 0 0 8.2 2.3" />
+      <path d="M4 2.5v2.2h2.2" />
+      <path d="M12 13.5v-2.2h-2.2" />
+    </svg>
+  ),
+  salary: (
+    <svg {...iconProps}>
+      <rect x="2" y="4" width="12" height="8" />
+      <circle cx="8" cy="8" r="1.7" />
+    </svg>
+  ),
+  settings: (
+    <svg {...iconProps}>
+      <circle cx="8" cy="8" r="2.2" />
+      <path d="M8 1.5v2.2M8 12.3v2.2M1.5 8h2.2M12.3 8h2.2M3.3 3.3l1.6 1.6M11.1 11.1l1.6 1.6M12.7 3.3l-1.6 1.6M4.9 11.1l-1.6 1.6" />
+    </svg>
+  ),
+  gethelp: (
+    <svg {...iconProps}>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M6.2 6.3c0-1 .8-1.8 1.8-1.8s1.8.7 1.8 1.7c0 1.3-1.8 1.4-1.8 2.6" />
+      <path d="M8 11h.01" />
+    </svg>
+  ),
+};
 
 function NavButton({
   item,
@@ -60,10 +123,9 @@ function NavButton({
         if (!active) e.currentTarget.style.background = "transparent";
       }}
     >
-      <span
-        className="w-1.5 h-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: active ? "#3537D7" : "#4F4F9B" }}
-      />
+      <span className="shrink-0 flex items-center justify-center" style={{ width: 16, height: 16 }}>
+        {ICONS[item.id]}
+      </span>
       <span className={active ? "font-medium" : ""}>{item.label}</span>
     </button>
   );
@@ -86,7 +148,7 @@ export function Sidebar({ activeView, onChange }: Props) {
             className="font-mono text-[10px] uppercase tracking-[0.14em]"
             style={{ color: "#4F4F9B" }}
           >
-            Invoice Tracker
+            Finance Agent
           </div>
         </div>
       </div>
