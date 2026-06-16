@@ -5,6 +5,7 @@ import type { Invoice } from "@/lib/sheets";
 import { StatCard } from "./StatCard";
 import { ProfileTabs } from "./ProfileTabs";
 import { MonthSelector } from "./MonthSelector";
+import { netPayer } from "@/lib/sheets";
 import { salaryTotal } from "@/lib/salary";
 
 interface Props {
@@ -36,7 +37,7 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
 
   const filtered = useMemo(() => {
     let list = invoices;
-    if (profile !== "all") list = list.filter((i) => i.paidBy === profile);
+    if (profile !== "all") list = list.filter((i) => netPayer(i) === profile);
     const pre = monthPrefix(month);
     if (pre) list = list.filter((i) => i.date.startsWith(pre));
     return list;
@@ -47,14 +48,14 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
     const byVendor: Record<string, number> = {};
     for (const i of filtered) {
       total += i.amountUSD;
-      if (i.paidBy === "Tim") tim += i.amountUSD;
-      if (i.paidBy === "Russo") russo += i.amountUSD;
+      if (netPayer(i) === "Tim") tim += i.amountUSD;
+      else russo += i.amountUSD;
       if (i.reimbursementStatus === "pending") { owed += i.amountUSD; pendingCount++; }
       byVendor[i.vendor] = (byVendor[i.vendor] || 0) + i.amountUSD;
     }
     const vendors = Object.entries(byVendor).sort((a, b) => b[1] - a[1]).slice(0, 8);
-    const timCount = filtered.filter((i) => i.paidBy === "Tim").length;
-    const russoCount = filtered.filter((i) => i.paidBy === "Russo").length;
+    const timCount = filtered.filter((i) => netPayer(i) === "Tim").length;
+    const russoCount = filtered.filter((i) => netPayer(i) === "Russo").length;
     const months = Math.max(1, new Set(filtered.filter((i) => i.date).map((i) => i.date.slice(0, 7))).size);
     return { total, tim, russo, owed, pendingCount, vendors, timCount, russoCount, months };
   }, [filtered]);

@@ -211,12 +211,19 @@ export async function addInvoice(p: AddInvoicePayload): Promise<{ fileUrl: strin
   return { fileUrl: data.fileUrl, row: data.row, fileId: data.fileId };
 }
 
+// Net cost attribution: a Russo-paid invoice that Tim has reimbursed is borne by Tim.
+export function netPayer(i: Invoice): "Tim" | "Russo" {
+  if (i.paidBy === "Tim") return "Tim";
+  if (i.reimbursementStatus === "settled") return "Tim";
+  return "Russo";
+}
+
 export function summarize(invoices: Invoice[]): ReimbursementSummary {
   const byPerson: Record<string, number> = {};
   let total = 0, owedToRusso = 0, settledAmount = 0, pendingCount = 0;
   for (const inv of invoices) {
     total += inv.amountUSD;
-    byPerson[inv.paidBy] = (byPerson[inv.paidBy] || 0) + inv.amountUSD;
+    byPerson[netPayer(inv)] = (byPerson[netPayer(inv)] || 0) + inv.amountUSD;
     if (inv.reimbursementStatus === "pending") { owedToRusso += inv.amountUSD; pendingCount++; }
     if (inv.reimbursementStatus === "settled") settledAmount += inv.amountUSD;
   }

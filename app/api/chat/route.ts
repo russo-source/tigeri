@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { listInvoices, summarize } from "@/lib/sheets";
+import { listInvoices, summarize, netPayer } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
 
@@ -26,19 +26,19 @@ export async function POST(req: Request) {
 
     const invoices = await listInvoices();
     const s = summarize(invoices);
-    const timCount = invoices.filter((i) => i.paidBy === "Tim").length;
-    const russoCount = invoices.filter((i) => i.paidBy === "Russo").length;
+    const timCount = invoices.filter((i) => netPayer(i) === "Tim").length;
+    const russoCount = invoices.filter((i) => netPayer(i) === "Russo").length;
     const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
     const data = `You are a finance assistant for Tigeri AI. Answer the user's question using ONLY the data below. If the answer isn't in this data, say you don't have that information — never guess or use outside knowledge. Be concise and cite exact figures. Today is ${today}.
 
 REIMBURSEMENT SUMMARY (USD):
 - Total spend: ${fmtUSD(s.total)} across ${s.count} invoices
-- Paid by Tim: ${fmtUSD(s.byPerson.Tim || 0)} across ${timCount} invoices
-- Paid by Russo: ${fmtUSD(s.byPerson.Russo || 0)} across ${russoCount} invoices
+- Paid by Tim (net of reimbursements): ${fmtUSD(s.byPerson.Tim || 0)} across ${timCount} invoices
+- Paid by Russo (still out-of-pocket): ${fmtUSD(s.byPerson.Russo || 0)} across ${russoCount} invoices
 - Tim owes Russo (pending reimbursements): ${fmtUSD(s.owedToRusso)} across ${s.pendingCount} invoices
-- Already reimbursed to Russo: ${fmtUSD(s.settledAmount)}
-(Reimbursement rule: Tim reimburses Russo's out-of-pocket costs monthly on the 15th. "Pending" = Tim still owes; "Tim" in the reimbursed field = already settled.)
+- Already reimbursed by Tim to Russo: ${fmtUSD(s.settledAmount)}
+(Attribution: an invoice's cost is borne by whoever ultimately pays it. A Russo-paid invoice that Tim has reimbursed ("Reimbursed" = Tim) counts toward Tim, NOT Russo; only still-pending invoices count toward Russo. Tim reimburses Russo monthly on the 15th. "Pending" = Tim still owes.)
 
 SALARY:
 - Russo's salary is $2,000/month, paid in USDC on the 15th. April 2026: paid (Apr 15). May 2026: paid (May 19). June 2026: due (Jun 15).
