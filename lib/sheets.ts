@@ -19,6 +19,7 @@ export interface Invoice {
   reimbursed: string; // raw cell: "" | "Tim" | "Pending"
   reimbursementStatus: ReimbursementStatus;
   vendor: string;
+  business: string;
   description: string;
   invoiceNo: string;
   date: string; // ISO YYYY-MM-DD ("" if unparseable)
@@ -93,21 +94,40 @@ export async function listInvoices(): Promise<Invoice[]> {
   const hIdx = rows.findIndex((r) => (r[0] || "").trim() === "Paid By");
   if (hIdx === -1) throw new Error('Could not locate header row ("Paid By") in the sheet');
 
+  // Map columns by header name so inserted/reordered columns don't break parsing.
+  const header = rows[hIdx].map((c) => (c || "").trim().toLowerCase());
+  const col = (name: string) => header.indexOf(name.toLowerCase());
+  const idx = {
+    paidBy: col("Paid By"),
+    reimbursed: col("Reimbursed"),
+    vendor: col("Vendor"),
+    business: col("Business"),
+    description: col("Description"),
+    invoiceNo: col("Invoice #"),
+    date: col("Date"),
+    status: col("Status"),
+    orig: col("Orig. Amount"),
+    cur: col("Cur."),
+    usd: col("Amount (USD)"),
+  };
+  const cell = (r: string[], i: number) => (i >= 0 ? (r[i] || "").trim() : "");
+
   const out: Invoice[] = [];
   for (let i = hIdx + 1; i < rows.length; i++) {
     const r = rows[i];
-    const paidBy = (r[0] || "").trim();
+    const paidBy = cell(r, idx.paidBy);
     if (paidBy !== "Tim" && paidBy !== "Russo") continue; // skip totals / footnotes / blanks
 
-    const reimbursed = (r[1] || "").trim();
-    const vendor = (r[2] || "").trim();
-    const description = (r[3] || "").trim();
-    const invoiceNo = (r[4] || "").trim();
-    const rawDate = (r[5] || "").trim();
-    const status = (r[6] || "").trim();
-    const origAmount = parseMoney(r[7]);
-    const currency = (r[8] || "").trim();
-    const amountUSD = parseMoney(r[9]);
+    const reimbursed = cell(r, idx.reimbursed);
+    const vendor = cell(r, idx.vendor);
+    const business = cell(r, idx.business);
+    const description = cell(r, idx.description);
+    const invoiceNo = cell(r, idx.invoiceNo);
+    const rawDate = cell(r, idx.date);
+    const status = cell(r, idx.status);
+    const origAmount = parseMoney(cell(r, idx.orig));
+    const currency = cell(r, idx.cur);
+    const amountUSD = parseMoney(cell(r, idx.usd));
 
     const idBase = `${invoiceNo && invoiceNo !== "—" ? invoiceNo : vendor}|${rawDate}|${amountUSD}`;
     out.push({
@@ -117,6 +137,7 @@ export async function listInvoices(): Promise<Invoice[]> {
       reimbursed,
       reimbursementStatus: reimbursementStatus(paidBy, reimbursed),
       vendor,
+      business,
       description,
       invoiceNo,
       date: parseDate(rawDate),
