@@ -70,14 +70,14 @@ export function ReimbursementsView({ invoices, onMarkSettled }: Props) {
           <div className="text-center py-10 ts-mono-meta">Nothing outstanding — all settled 🎉</div>
         ) : (
           pending.map((i) => (
-            <div key={i.id} className="flex items-center justify-between gap-3 px-5 py-3 row-hover" style={{ borderColor: "var(--border-subtle)" }}>
+            <div key={i.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 px-4 sm:px-5 py-3 row-hover" style={{ borderColor: "var(--border-subtle)" }}>
               <div className="min-w-0">
-                <div className="font-medium text-[14px] truncate" style={{ color: "var(--text-primary)" }}>
+                <div className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>
                   {i.vendor} <span style={{ color: "var(--text-muted)" }}>· {i.description}</span>
                 </div>
                 <div className="ts-mono-meta">{i.rawDate}{i.invoiceNo && i.invoiceNo !== "—" ? ` · ${i.invoiceNo}` : ""}</div>
               </div>
-              <div className="flex items-center gap-4 shrink-0">
+              <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0">
                 <span className="font-mono font-semibold text-[14px]" style={{ color: "var(--text-primary)" }}>{fmtUSD(i.amountUSD)}</span>
                 <button className="ts-btn ts-btn-primary" style={{ padding: "8px 14px", fontSize: "13px" }} disabled={busyRow === i.row} onClick={() => handle(i.row)}>
                   {busyRow === i.row ? <><span className="ts-loader mr-2" /> Saving</> : "Mark settled"}
@@ -95,14 +95,14 @@ export function ReimbursementsView({ invoices, onMarkSettled }: Props) {
           <div className="text-center py-10 ts-mono-meta">No reimbursements yet</div>
         ) : (
           settled.map((i) => (
-            <div key={i.id} className="flex items-center justify-between gap-3 px-5 py-3 row-hover" style={{ borderColor: "var(--border-subtle)" }}>
+            <div key={i.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 px-4 sm:px-5 py-3 row-hover" style={{ borderColor: "var(--border-subtle)" }}>
               <div className="min-w-0">
-                <div className="font-medium text-[14px] truncate" style={{ color: "var(--text-primary)" }}>
+                <div className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>
                   {i.vendor} <span style={{ color: "var(--text-muted)" }}>· {i.description}</span>
                 </div>
                 <div className="ts-mono-meta">{i.rawDate}</div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
                 <span className="font-mono font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>{fmtUSD(i.amountUSD)}</span>
                 <span className="ts-badge ts-badge-active">Reimbursed</span>
               </div>

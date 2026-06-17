@@ -116,7 +116,40 @@ export function InvoicesTable({ invoices }: Props) {
         </div>
       </div>
 
-      <div className="ts-card overflow-x-auto">
+      {/* Mobile: stacked card list. Hidden at md+. */}
+      <div className="md:hidden ts-card divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+        {rows.length === 0 ? (
+          <div className="text-center py-12 ts-mono-meta">No invoices match</div>
+        ) : (
+          rows.map((i) => (
+            <div key={i.id} className="px-4 py-3" style={{ borderColor: "var(--border-subtle)" }}>
+              <div className="flex items-baseline justify-between gap-3">
+                <div className="font-medium text-[14px] truncate" style={{ color: "var(--text-primary)" }}>{i.vendor}</div>
+                <div className="font-mono font-semibold text-[14px] shrink-0" style={{ color: "var(--text-primary)" }}>{fmtUSD(i.amountUSD)}</div>
+              </div>
+              {i.description && (
+                <div className="ts-mono-meta truncate mt-0.5">{i.description}</div>
+              )}
+              <div className="flex items-center justify-between gap-3 mt-2">
+                <div className="ts-mono-meta">
+                  {i.rawDate || "—"} · {i.paidBy}
+                  {i.currency && i.currency !== "USD" && ` · ${i.origAmount.toLocaleString()} ${i.currency}`}
+                </div>
+                {reimbursedBadge(i)}
+              </div>
+            </div>
+          ))
+        )}
+        {rows.length > 0 && (
+          <div className="flex items-baseline justify-between px-4 py-3" style={{ background: "var(--bg-surface)" }}>
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-primary)" }}>{rows.length} invoices · total</div>
+            <div className="font-mono text-[14px] font-semibold" style={{ color: "var(--text-primary)" }}>{fmtUSD(total)}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop: full table. Hidden under md. */}
+      <div className="ts-card overflow-x-auto hidden md:block">
         <table className="w-full border-collapse">
           <thead>
             <tr>
