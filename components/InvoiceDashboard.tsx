@@ -115,12 +115,12 @@ export function InvoiceDashboard({ invoices, loading }: Props) {
               <div className="text-center py-10 ts-mono-meta">No spend in this view</div>
             ) : (
               stats.vendors.map(([vendor, val], idx) => (
-                <div key={vendor} className="grid grid-cols-[120px_1fr_90px] items-center gap-3 py-2 px-2 -mx-2 rounded-md row-hover">
+                <div key={vendor} className="grid grid-cols-[80px_1fr_72px] sm:grid-cols-[120px_1fr_90px] items-center gap-2 sm:gap-3 py-2 px-2 -mx-2 rounded-md row-hover">
                   <div className="ts-mono-meta truncate">{vendor}</div>
-                  <div className="h-2 rounded-pill overflow-hidden" style={{ background: "var(--bg-raised)" }}>
+                  <div className="h-2.5 sm:h-2 rounded-pill overflow-hidden" style={{ background: "var(--bg-raised)" }}>
                     <div className="h-full rounded-pill" style={{ width: `${(val / vendorMax) * 100}%`, background: VENDOR_COLORS[idx % VENDOR_COLORS.length] }} />
                   </div>
-                  <div className="font-mono text-[13px] font-medium text-right" style={{ color: "var(--text-primary)" }}>
+                  <div className="font-mono text-[12px] sm:text-[13px] font-medium text-right" style={{ color: "var(--text-primary)" }}>
                     {fmtUSD(val)}
                   </div>
                 </div>

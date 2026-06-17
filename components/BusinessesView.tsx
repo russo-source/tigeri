@@ -85,12 +85,12 @@ export function BusinessesView({ invoices }: Props) {
           <div className="text-center py-10 ts-mono-meta">No invoices yet</div>
         ) : (
           businesses.map((b, idx) => (
-            <div key={b.name} className="grid grid-cols-[140px_1fr_100px] items-center gap-3 py-2 px-2 -mx-2 rounded-md row-hover">
+            <div key={b.name} className="grid grid-cols-[96px_1fr_80px] sm:grid-cols-[140px_1fr_100px] items-center gap-2 sm:gap-3 py-2 px-2 -mx-2 rounded-md row-hover">
               <div className="ts-mono-meta truncate">{b.name}</div>
-              <div className="h-2 rounded-pill overflow-hidden" style={{ background: "var(--bg-raised)" }}>
+              <div className="h-2.5 sm:h-2 rounded-pill overflow-hidden" style={{ background: "var(--bg-raised)" }}>
                 <div className="h-full rounded-pill" style={{ width: `${(b.total / max) * 100}%`, background: COLORS[idx % COLORS.length] }} />
               </div>
-              <div className="font-mono text-[13px] font-medium text-right" style={{ color: "var(--text-primary)" }}>{fmtUSD(b.total)}</div>
+              <div className="font-mono text-[12px] sm:text-[13px] font-medium text-right" style={{ color: "var(--text-primary)" }}>{fmtUSD(b.total)}</div>
             </div>
           ))
         )}
@@ -110,9 +110,9 @@ export function BusinessesView({ invoices }: Props) {
                 {b.count} invoices · Tim {fmtUSD(b.tim)} · Russo {fmtUSD(b.russo)}
               </div>
               {b.vendors.map(([vendor, val]) => (
-                <div key={vendor} className="grid grid-cols-[110px_1fr_84px] items-center gap-3 py-1.5">
+                <div key={vendor} className="grid grid-cols-[80px_1fr_72px] sm:grid-cols-[110px_1fr_84px] items-center gap-2 sm:gap-3 py-1.5">
                   <div className="ts-mono-meta truncate">{vendor}</div>
-                  <div className="h-1.5 rounded-pill overflow-hidden" style={{ background: "var(--bg-raised)" }}>
+                  <div className="h-2 sm:h-1.5 rounded-pill overflow-hidden" style={{ background: "var(--bg-raised)" }}>
                     <div className="h-full rounded-pill" style={{ width: `${(val / vmax) * 100}%`, background: COLORS[idx % COLORS.length] }} />
                   </div>
                   <div className="font-mono text-[12px] text-right" style={{ color: "var(--text-secondary)" }}>{fmtUSD(val)}</div>
