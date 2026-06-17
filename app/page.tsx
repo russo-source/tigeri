@@ -36,6 +36,7 @@ function DashboardInner() {
   const [syncedAt, setSyncedAt] = useState<Date | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; error?: boolean } | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const showToast = useCallback((msg: string, error?: boolean) => {
     setToast({ msg, error });
@@ -71,6 +72,7 @@ function DashboardInner() {
 
   function changeView(id: string) {
     router.push(`/?view=${id}`);
+    setSidebarOpen(false);
   }
 
   async function markSettled(row: number) {
@@ -97,9 +99,9 @@ function DashboardInner() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar activeView={activeView} onChange={changeView} />
+      <Sidebar activeView={activeView} onChange={changeView} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
-        <TopBar syncedAt={syncedAt} status={status} />
+        <TopBar syncedAt={syncedAt} status={status} onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 w-full max-w-[1280px] mx-auto px-8 py-8">
           <ChatBar />
           {errorBanner && (

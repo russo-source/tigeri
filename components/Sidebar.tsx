@@ -3,6 +3,8 @@
 interface Props {
   activeView: string;
   onChange: (id: string) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 interface NavItem {
@@ -131,72 +133,97 @@ function NavButton({
   );
 }
 
-export function Sidebar({ activeView, onChange }: Props) {
+export function Sidebar({ activeView, onChange, isOpen = false, onClose }: Props) {
   return (
-    <aside
-      className="w-[240px] shrink-0 h-screen sticky top-0 flex flex-col"
-      style={{ background: "#02010B", color: "#EBF0F7" }}
-    >
-      {/* Brand */}
-      <div className="px-5 py-5 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-md bg-gradient-flywheel shrink-0" />
-        <div className="leading-tight">
-          <div className="font-semibold text-[15px]" style={{ color: "#EBF0F7" }}>
-            Tigeri
-          </div>
-          <div
-            className="font-mono text-[10px] uppercase tracking-[0.14em]"
-            style={{ color: "#4F4F9B" }}
-          >
-            Finance Agent
-          </div>
-        </div>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2">
-        {GROUPS.map((group) => (
-          <div key={group.eyebrow} className="mb-5">
+    <>
+      {/* Mobile backdrop */}
+      <div
+        className={`md:hidden fixed inset-0 z-30 transition-opacity duration-200 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        style={{ background: "rgba(2,1,11,0.55)" }}
+        onClick={onClose}
+        aria-hidden
+      />
+      <aside
+        className={`w-[240px] shrink-0 h-screen flex flex-col z-40 transition-transform duration-200
+          fixed top-0 left-0 md:sticky md:translate-x-0
+          ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        style={{ background: "#02010B", color: "#EBF0F7" }}
+      >
+        {/* Brand */}
+        <div className="px-5 py-5 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-md bg-gradient-flywheel shrink-0" />
+          <div className="leading-tight flex-1 min-w-0">
+            <div className="font-semibold text-[15px]" style={{ color: "#EBF0F7" }}>
+              Tigeri
+            </div>
             <div
-              className="px-3 mb-2 font-mono text-[10px] uppercase tracking-[0.14em]"
+              className="font-mono text-[10px] uppercase tracking-[0.14em]"
               style={{ color: "#4F4F9B" }}
             >
-              {group.eyebrow}
-            </div>
-            <div className="flex flex-col gap-0.5">
-              {group.items.map((item) => (
-                <NavButton
-                  key={item.id}
-                  item={item}
-                  active={item.id === activeView}
-                  onChange={onChange}
-                />
-              ))}
+              Finance Agent
             </div>
           </div>
-        ))}
-      </nav>
+          {/* Mobile close */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+            className="md:hidden w-8 h-8 flex items-center justify-center rounded-md"
+            style={{ color: "#9AB6DD" }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
 
-      {/* Profile */}
-      <div
-        className="px-4 py-4 flex items-center gap-3"
-        style={{ borderTop: "1px solid #14143F" }}
-      >
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
+          {GROUPS.map((group) => (
+            <div key={group.eyebrow} className="mb-5">
+              <div
+                className="px-3 mb-2 font-mono text-[10px] uppercase tracking-[0.14em]"
+                style={{ color: "#4F4F9B" }}
+              >
+                {group.eyebrow}
+              </div>
+              <div className="flex flex-col gap-0.5">
+                {group.items.map((item) => (
+                  <NavButton
+                    key={item.id}
+                    item={item}
+                    active={item.id === activeView}
+                    onChange={onChange}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Profile */}
         <div
-          className="w-9 h-9 rounded-full flex items-center justify-center font-semibold text-[14px] shrink-0"
-          style={{ background: "#3537D7", color: "#FFFFFF" }}
+          className="px-4 py-4 flex items-center gap-3"
+          style={{ borderTop: "1px solid #14143F" }}
         >
-          R
-        </div>
-        <div className="leading-tight min-w-0">
-          <div className="text-[13px] font-medium truncate" style={{ color: "#EBF0F7" }}>
-            Russo Jossy
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center font-semibold text-[14px] shrink-0"
+            style={{ background: "#3537D7", color: "#FFFFFF" }}
+          >
+            R
           </div>
-          <div className="text-[11px] truncate" style={{ color: "#7178C2" }}>
-            russo@tigeri.ai
+          <div className="leading-tight min-w-0">
+            <div className="text-[13px] font-medium truncate" style={{ color: "#EBF0F7" }}>
+              Russo Jossy
+            </div>
+            <div className="text-[11px] truncate" style={{ color: "#7178C2" }}>
+              russo@tigeri.ai
+            </div>
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }
