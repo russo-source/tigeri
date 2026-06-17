@@ -116,8 +116,8 @@ export function InvoicesTable({ invoices }: Props) {
         </div>
       </div>
 
-      {/* Mobile: stacked card list. Hidden at md+. */}
-      <div className="md:hidden ts-card divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+      {/* Mobile + tablet: stacked card list. Hidden at lg+. */}
+      <div className="lg:hidden ts-card divide-y" style={{ borderColor: "var(--border-subtle)" }}>
         {rows.length === 0 ? (
           <div className="text-center py-12 ts-mono-meta">No invoices match</div>
         ) : (
@@ -148,8 +148,8 @@ export function InvoicesTable({ invoices }: Props) {
         )}
       </div>
 
-      {/* Desktop: full table. Hidden under md. */}
-      <div className="ts-card overflow-x-auto hidden md:block">
+      {/* Desktop: full table. Hidden under lg. */}
+      <div className="ts-card overflow-x-auto hidden lg:block">
         <table className="w-full border-collapse">
           <thead>
             <tr>
